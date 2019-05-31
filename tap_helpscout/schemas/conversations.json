@@ -1,0 +1,193 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "number": {
+      "type": ["null", "integer"]
+    },
+    "threads": {
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "folder_id": {
+      "type": ["null", "integer"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "preview": {
+      "type": ["null", "string"]
+    },
+    "mailbox_id": {
+      "type": ["null", "integer"]
+    },
+    "assignee_id": {
+      "type": ["null", "integer"]
+    },
+    "assignee_type": {
+      "type": ["null", "string"]
+    },
+    "assignee_first": {
+      "type": ["null", "string"]
+    },
+    "assignee_last": {
+      "type": ["null", "string"]
+    },
+    "assignee_photo_url": {
+      "type": ["null", "string"]
+    },
+    "assignee_email": {
+      "type": ["null", "string"]
+    },
+    "created_by_id": {
+      "type": ["null", "integer"]
+    },
+    "created_by_type": {
+      "type": ["null", "string"]
+    },
+    "created_by_first": {
+      "type": ["null", "string"]
+    },
+    "created_by_last": {
+      "type": ["null", "string"]
+    },
+    "created_by_photo_url": {
+      "type": ["null", "string"]
+    },
+    "created_by_email": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "closed_by": {
+      "type": ["null", "integer"]
+    },
+    "user_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customer_wating_since_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customer_waiting_since_friendly": {
+      "type": ["null", "string"]
+    },
+    "customer_waiting_since_last_reply_from": {
+      "type": ["null", "string"]
+    },
+    "source_type": {
+      "type": ["null", "string"]
+    },
+    "source_via": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "color": {
+                "type": ["null", "string"]
+              },
+              "tag": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cc": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bcc": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "primary_customer_id": {
+      "type": ["null", "integer"]
+    },
+    "primary_customer_type": {
+      "type": ["null", "string"]
+    },
+    "primary_customer_first": {
+      "type": ["null", "string"]
+    },
+    "primary_customer_last": {
+      "type": ["null", "string"]
+    },
+    "primary_customer_photo_url": {
+      "type": ["null", "string"]
+    },
+    "primary_customer_email": {
+      "type": ["null", "string"]
+    },
+    "custom_fields": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              },
+              "text": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+    "start_date": "2019-01-01T00:00:00Z",
+    "refresh_token ": "xxx",
+    "client_id": "xxx",
+    "client_secret": "xxx",
+    "user_agent": "tap-helpscout <user@domain.com>"
+}

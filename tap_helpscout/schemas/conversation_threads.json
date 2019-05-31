@@ -1,0 +1,163 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "conversation_id": {
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "action_type": {
+      "type": ["null", "string"]
+    },
+    "action_text": {
+      "type": ["null", "string"]
+    },
+    "body": {
+      "type": ["null", "string"]
+    },
+    "source_type": {
+      "type": ["null", "string"]
+    },
+    "source_via": {
+      "type": ["null", "string"]
+    },
+    "customer_id": {
+      "type": ["null", "integer"]
+    },
+    "customer_first": {
+      "type": ["null", "string"]
+    },
+    "customer_last": {
+      "type": ["null", "string"]
+    },
+    "customer_photo_url": {
+      "type": ["null", "string"]
+    },
+    "customer_email": {
+      "type": ["null", "string"]
+    },
+    "created_by_id": {
+      "type": ["null", "integer"]
+    },
+    "created_by_first": {
+      "type": ["null", "string"]
+    },
+    "created_by_last": {
+      "type": ["null", "string"]
+    },
+    "created_by_photo_url": {
+      "type": ["null", "string"]
+    },
+    "created_by_email": {
+      "type": ["null", "string"]
+    },
+    "assigned_to_id": {
+      "type": ["null", "integer"]
+    },
+    "assigned_to_first": {
+      "type": ["null", "string"]
+    },
+    "assigned_to_last": {
+      "type": ["null", "string"]
+    },
+    "assigned_to_photo_url": {
+      "type": ["null", "string"]
+    },
+    "assigned_to_email": {
+      "type": ["null", "string"]
+    },
+    "saved_reply_id": {
+      "type": ["null", "integer"]
+    },
+    "to": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cc": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bcc": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "opened_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "attachments": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "filename": {
+                "type": ["null", "string"]
+              },
+              "mime_type": {
+                "type": ["null", "string"]
+              },
+              "width": {
+                "type": ["null", "integer"]
+              },
+              "height": {
+                "type": ["null", "integer"]
+              },
+              "size": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,12 @@
+config/
+virtualenvs/
+catalog.json
+config.json
+state.json
+*.sublime-*
+.python-version
+singer-check-tap-data
+*.pyc
+*.egg-info
+dist/
+__pycache__/
