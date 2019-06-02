@@ -118,7 +118,7 @@ def copy_attachments(this_json, path=None):
     return this_json
 
 
-# Remove all _links nodes from json
+# Remove all _links and _embedded nodes from json
 def remove_embedded_links(this_json):
     if not isinstance(this_json, (dict, list)):
         return this_json
@@ -222,7 +222,7 @@ def sync_endpoint(schema_name, endpoint=None, path=None, with_updated_since=Fals
             page = response['page']['number']
             total_pages = response['page']['totalPages']
             LOGGER.info("Sync page {} of {}".format(page, total_pages))
-            if page == 0 or page > 100:
+            if page == 0 or page > 500:
                 break
             page = page + 1
     singer.write_state(STATE)
