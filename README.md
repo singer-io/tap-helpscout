@@ -29,18 +29,21 @@ This tap:
     > virtualenv -p python3 venv
     > source venv/bin/activate
     > python setup.py install
+    OR
+    > cd .../tap-helpscout
+    > pip install .
     ```
 2. Dependent libraries
     The following dependent libraries were installed.
     ```bash
     > pip install singer-python
     > pip install singer-tools
-    > pip install tap-framework
-    > conda install -c conda-forge pendulum 
-
+    > pip install target-stitch
+    > pip install target-json
+    > pip install backoff
     ```
-    - [tap-framework](https://pypi.org/project/tap-framework/)
     - [singer-tools](https://github.com/singer-io/singer-tools)
+    - [target-stitch](https://github.com/singer-io/target-stitch)
 3. Create your tap's config file which should look like the following:
 
     ```json
@@ -80,6 +83,10 @@ This tap:
 
     ```bash
     tap-helpscout --config config.json --catalog catalog.json
+    ```
+    OR
+    ```bash
+    tap-helpscout --config config.json | target-json
     ```
 
 ---

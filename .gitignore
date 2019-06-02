@@ -3,6 +3,7 @@ virtualenvs/
 catalog.json
 config.json
 state.json
+target*.json
 *.sublime-*
 .python-version
 singer-check-tap-data

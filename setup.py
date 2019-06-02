@@ -8,9 +8,7 @@ setup(name='tap-helpscout',
       author='jeff.huth@bytecode.io',
       classifiers=['Programming Language :: Python :: 3 :: Only'],
       py_modules=['tap_helpscout'],
-      install_requires=[
-          'tap-framework==0.1.1'
-      ],
+      install_requires=[],
       entry_points='''
           [console_scripts]
           tap-helpscout=tap_helpscout:main

@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -16,65 +17,98 @@
     "state": {
       "type": ["null", "string"]
     },
-    "action_type": {
-      "type": ["null", "string"]
-    },
-    "action_text": {
-      "type": ["null", "string"]
+    "action": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "text": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "body": {
       "type": ["null", "string"]
     },
-    "source_type": {
-      "type": ["null", "string"]
+    "source": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "via": {
+          "type": ["null", "string"]
+        }
+      }
     },
-    "source_via": {
-      "type": ["null", "string"]
+    "customer": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "first": {
+          "type": ["null", "string"]
+        },
+        "last": {
+          "type": ["null", "string"]
+        },
+        "photo_url": {
+          "type": ["null", "string"]
+        },
+        "email": {
+          "type": ["null", "string"]
+        }
+      }
     },
-    "customer_id": {
-      "type": ["null", "integer"]
+    "created_by": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "first": {
+          "type": ["null", "string"]
+        },
+        "last": {
+          "type": ["null", "string"]
+        },
+        "photo_url": {
+          "type": ["null", "string"]
+        },
+        "email": {
+          "type": ["null", "string"]
+        }
+      }
     },
-    "customer_first": {
-      "type": ["null", "string"]
-    },
-    "customer_last": {
-      "type": ["null", "string"]
-    },
-    "customer_photo_url": {
-      "type": ["null", "string"]
-    },
-    "customer_email": {
-      "type": ["null", "string"]
-    },
-    "created_by_id": {
-      "type": ["null", "integer"]
-    },
-    "created_by_first": {
-      "type": ["null", "string"]
-    },
-    "created_by_last": {
-      "type": ["null", "string"]
-    },
-    "created_by_photo_url": {
-      "type": ["null", "string"]
-    },
-    "created_by_email": {
-      "type": ["null", "string"]
-    },
-    "assigned_to_id": {
-      "type": ["null", "integer"]
-    },
-    "assigned_to_first": {
-      "type": ["null", "string"]
-    },
-    "assigned_to_last": {
-      "type": ["null", "string"]
-    },
-    "assigned_to_photo_url": {
-      "type": ["null", "string"]
-    },
-    "assigned_to_email": {
-      "type": ["null", "string"]
+    "assigned_to": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "first": {
+          "type": ["null", "string"]
+        },
+        "last": {
+          "type": ["null", "string"]
+        },
+        "email": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "saved_reply_id": {
       "type": ["null", "integer"]
@@ -119,12 +153,10 @@
       ]
     },
     "created_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "opened_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "attachments": {
       "anyOf": [
@@ -132,6 +164,7 @@
           "type": "array",
           "items": {
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "id": {
                 "type": ["null", "integer"]
