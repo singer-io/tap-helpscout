@@ -106,14 +106,17 @@ def convert_json(this_json):
     return out
 
 
-def copy_attachments(this_json, path=None):
+def denest_embedded_nodes(this_json, path=None):
     if path is None:
         return this_json
     i = 0
+    nodes = ['attachments', "address", "chats", "emails", "phones", "social_profiles", "websites"]
     for record in this_json[path]:
         if "_embedded" in record:
-            if "attachments" in record['_embedded']:
-                this_json[path][i]['attachments'] = this_json[path][i]['_embedded']['attachments']
+            for node in nodes:
+                if node in record['_embedded']:
+                    this_json[path][i][node] = this_json[path][i]['_embedded'][node]
+            
         i = i + 1
     return this_json
 
@@ -183,15 +186,18 @@ def sync_endpoint(schema_name, endpoint=None, path=None, with_updated_since=Fals
     with Transformer() as transformer:
         page = 1
         total_pages = 1  # initial value, set with first API call
+        # pagination loop
         while page <= total_pages:
             url = get_url(endpoint or schema_name)
             LOGGER.info('URL: {}'.format(url))
+            # some objects allow modifiedSince and sorting parameters
             if with_updated_since:
                 params = {
                     "sortField": "modifiedAt",
                     "sortOrder": "asc",
                     "modifiedSince": updated_since
                     }
+            # some objects do not allow parameters (except page)
             else:
                 params = {}
             params['page'] = page
@@ -199,30 +205,34 @@ def sync_endpoint(schema_name, endpoint=None, path=None, with_updated_since=Fals
             path = path or schema_name
             data = {}
             if '_embedded' in response:
+                # transform response: denest embedded nodes, remove _embedded and _links
                 data = convert_json(remove_embedded_links(\
-                    copy_attachments(response['_embedded'], path)))[path]
+                    denest_embedded_nodes(response['_embedded'], path)))[path]
             for row in data:
+                # map_handler allows for additional object transforms
                 if map_handler is not None:
                     row = map_handler(row)
+                # date-times = None cause problems for some targets; prune these nodes
                 remove_empty_date_times(row, schema)
                 item = transformer.transform(row, schema)
-                if item.get(bookmark_property) is None or\
-                    isinstance(item.get(bookmark_property), int):
+                if item.get(bookmark_property) is None:
                     singer.write_record(schema_name, item)
-                    # take any additional actions required for the currently loaded endpoint
+                    # if object has sub-objects, loop thru for each id
                     if for_each_handler is not None:
                         for_each_handler(row)
+                # filter records where bookmark datetime after start
                 elif datetime.strptime(item[bookmark_property], "%Y-%m-%dT%H:%M:%SZ") >=\
                     datetime.strptime(start, "%Y-%m-%dT%H:%M:%SZ"):
                     singer.write_record(schema_name, item)
-                    # take any additional actions required for the currently loaded endpoint
+                    # if object has sub-objects, loop thru for each id
                     if for_each_handler is not None:
                         for_each_handler(row)
                     utils.update_state(STATE, schema_name, item[bookmark_property])
+            # set page and total_pages for pagination
             page = response['page']['number']
             total_pages = response['page']['totalPages']
             LOGGER.info("Sync page {} of {}".format(page, total_pages))
-            if page == 0 or page > 500:
+            if page == 0 or page > 100:
                 break
             page = page + 1
     singer.write_state(STATE)
@@ -231,13 +241,14 @@ def sync_endpoint(schema_name, endpoint=None, path=None, with_updated_since=Fals
 def sync_conversations():
     def for_each_conversation(conversation):
         def map_conversation_thread(thread):
+            # add parent conversation_id to thread
             thread['conversation_id'] = conversation['id']
             return thread
         # Sync conversation threads
         sync_endpoint("conversation_threads",
                       endpoint=("conversations/{}/threads".format(conversation['id'])),
                       path="threads",
-                      bookmark_property="created_at",
+                      bookmark_property=None,
                       map_handler=map_conversation_thread)
     sync_endpoint("conversations",
                   with_updated_since=True,
@@ -257,7 +268,7 @@ def sync_mailboxes():
         sync_endpoint("mailbox_fields",
                       endpoint=("mailboxes/{}/fields".format(mailbox['id'])),
                       path="fields",
-                      bookmark_property="id",
+                      bookmark_property=None,
                       map_handler=map_mailbox_field)
         # Sync mailbox folders
         sync_endpoint("mailbox_folders",

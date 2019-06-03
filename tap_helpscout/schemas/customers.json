@@ -40,6 +40,159 @@
     },
     "background": {
       "type": ["null", "string"]
+    },
+    "address": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "lines": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "postal_code": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "emails": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "websites": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "chats": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "phones": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "social_profiles": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   }
 }

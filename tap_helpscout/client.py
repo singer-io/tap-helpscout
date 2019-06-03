@@ -47,7 +47,6 @@ class HelpScoutClient(object):
 
         response = self.__session.post(
             'https://api.helpscout.net/v2/oauth2/token',
-            auth=(self.__client_id, self.__client_secret),
             headers=headers,
             data={
                 'grant_type': 'refresh_token',
