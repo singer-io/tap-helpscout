@@ -8,6 +8,9 @@
     "conversation_id": {
       "type": ["null", "integer"]
     },
+    "conversation_user_updated_at": {
+      "type": ["null", "string"]
+    },
     "type": {
       "type": ["null", "string"]
     },
@@ -103,6 +106,9 @@
           "type": ["null", "string"]
         },
         "last": {
+          "type": ["null", "string"]
+        },
+        "photo_url": {
           "type": ["null", "string"]
         },
         "email": {

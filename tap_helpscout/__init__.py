@@ -243,12 +243,13 @@ def sync_conversations():
         def map_conversation_thread(thread):
             # add parent conversation_id to thread
             thread['conversation_id'] = conversation['id']
+            thread['conversation_user_updated_at'] = conversation['user_updated_at']
             return thread
         # Sync conversation threads
         sync_endpoint("conversation_threads",
                       endpoint=("conversations/{}/threads".format(conversation['id'])),
                       path="threads",
-                      bookmark_property=None,
+                      bookmark_property="conversation_user_updated_at",
                       map_handler=map_conversation_thread)
     sync_endpoint("conversations",
                   with_updated_since=True,
@@ -260,15 +261,17 @@ def sync_mailboxes():
     def for_each_mailbox(mailbox):
         def map_mailbox_field(field):
             field['mailbox_id'] = mailbox['id']
+            field['mailbox_updated_at'] = mailbox['updated_at']
             return field
         def map_mailbox_folder(folder):
             folder['mailbox_id'] = mailbox['id']
+            folder['mailbox_updated_at'] = mailbox['updated_at']
             return folder
         # Sync mailbox fields
         sync_endpoint("mailbox_fields",
                       endpoint=("mailboxes/{}/fields".format(mailbox['id'])),
                       path="fields",
-                      bookmark_property=None,
+                      bookmark_property="mailbox_updated_at",
                       map_handler=map_mailbox_field)
         # Sync mailbox folders
         sync_endpoint("mailbox_folders",

@@ -8,6 +8,9 @@
     "mailbox_id": {
       "type": ["null", "integer"]
     },
+    "mailbox_updated_at": {
+      "type": ["null", "string"]
+    },
     "name": {
       "type": ["null", "string"]
     },
