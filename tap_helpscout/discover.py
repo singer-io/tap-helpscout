@@ -1,6 +1,6 @@
 from singer.catalog import Catalog, CatalogEntry, Schema
 
-from tap_mailchimp.schema import get_schemas, PKS
+from tap_helpscout.schema import get_schemas, PKS
 
 def discover():
     schemas, field_metadata = get_schemas()

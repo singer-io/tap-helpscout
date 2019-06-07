@@ -5,6 +5,7 @@ import backoff
 import requests
 from requests.exceptions import ConnectionError
 from singer import metrics
+from singer import utils
 
 class Server5xxError(Exception):
     pass
@@ -46,7 +47,7 @@ class HelpScoutClient(object):
             headers['User-Agent'] = self.__user_agent
 
         response = self.__session.post(
-            'https://api.helpscout.net/v2/oauth2/token',
+            url='https://api.helpscout.net/v2/oauth2/token',
             headers=headers,
             data={
                 'grant_type': 'refresh_token',
@@ -86,6 +87,7 @@ class HelpScoutClient(object):
                           (Server5xxError, ConnectionError),
                           max_tries=5,
                           factor=2)
+    @utils.ratelimit(400, 60)
     def request(self, method, path=None, url=None, **kwargs):
         self.get_access_token()
 
