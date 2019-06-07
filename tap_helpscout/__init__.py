@@ -26,6 +26,7 @@ def do_discover(client):
     json.dump(catalog.to_dict(), sys.stdout, indent=2)
     LOGGER.info('Finished discover')
 
+
 @singer.utils.handle_top_exception(LOGGER)
 def main():
 
