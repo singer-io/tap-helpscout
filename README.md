@@ -40,7 +40,7 @@ This tap:
     > pip install singer-tools
     > pip install target-stitch
     > pip install target-json
-    > pip install backoff
+    
     ```
     - [singer-tools](https://github.com/singer-io/singer-tools)
     - [target-stitch](https://github.com/singer-io/target-stitch)
@@ -96,7 +96,7 @@ This tap:
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
 
-6. Test the Tap
+7. Test the Tap
     
     While developing the HelpScout tap, the following utilities were run in accordance with Singer.io best practices:
     Pylint to improve [code quality](https://github.com/singer-io/getting-started/blob/master/docs/BEST_PRACTICES.md#code-quality):

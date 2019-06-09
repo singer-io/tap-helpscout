@@ -60,6 +60,7 @@ def remove_embedded_links(this_json):
             if kk not in {'_embedded', '_links'}}
 
 
-def transform(this_json, path):
-    transformed_json = data = convert_json(remove_embedded_links(\
-                    denest_embedded_nodes(this_json, path)))  
+def transform_json(this_json, path):
+    transformed_json = convert_json(remove_embedded_links(\
+                    denest_embedded_nodes(this_json, path)))
+    return transformed_json

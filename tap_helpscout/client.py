@@ -92,7 +92,7 @@ class HelpScoutClient(object):
         self.get_access_token()
 
         if not url and self.__base_url is None:
-            self.__base_url = 'https://api.helpscout.net/v2/'
+            self.__base_url = 'https://api.helpscout.net/v2'
 
         if not url and path:
             url = self.__base_url + path
