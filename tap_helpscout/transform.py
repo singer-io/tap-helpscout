@@ -1,6 +1,4 @@
 import re
-import os
-import json
 
 # Convert camelCase to snake_case
 def convert(name):
@@ -45,7 +43,7 @@ def denest_embedded_nodes(this_json, path=None):
         if "_embedded" in record:
             for node in nodes:
                 if node in record['_embedded']:
-                    this_json[path][i][node] = this_json[path][i]['_embedded'][node]    
+                    this_json[path][i][node] = this_json[path][i]['_embedded'][node]
         i = i + 1
     return this_json
 

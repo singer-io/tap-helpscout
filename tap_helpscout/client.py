@@ -1,16 +1,21 @@
 import json
 from datetime import datetime, timedelta
-
 import backoff
 import requests
-from requests.exceptions import ConnectionError
 from singer import metrics
 from singer import utils
 
 class Server5xxError(Exception):
     pass
 
-class HelpScoutClient(object):
+class Server429Error(Exception):
+    pass
+
+class HelpScoutClient:
+
+    # pylint: disable=too-many-instance-attributes
+    # Nine is reasonable in this case.
+
     def __init__(self,
                  config_path,
                  client_id,
@@ -31,7 +36,7 @@ class HelpScoutClient(object):
         self.get_access_token()
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exception_type, exception_value, traceback):
         self.__session.close()
 
     @backoff.on_exception(backoff.expo,
@@ -84,11 +89,12 @@ class HelpScoutClient(object):
 
 
     @backoff.on_exception(backoff.expo,
-                          (Server5xxError, ConnectionError),
-                          max_tries=5,
-                          factor=2)
+                          (Server5xxError, ConnectionError, Server429Error),
+                          max_tries=7,
+                          factor=3)
     @utils.ratelimit(400, 60)
     def request(self, method, path=None, url=None, **kwargs):
+
         self.get_access_token()
 
         if not url and self.__base_url is None:
@@ -119,6 +125,11 @@ class HelpScoutClient(object):
 
         if response.status_code >= 500:
             raise Server5xxError()
+
+        #Use retry functionality in backoff to wait and retry if
+        #response code equals 429 because rate limit has been exceeded
+        if response.status_code == 429:
+            raise Server429Error()
 
         response.raise_for_status()
 

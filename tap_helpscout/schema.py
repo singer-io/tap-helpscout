@@ -1,9 +1,6 @@
 import os
 import json
 
-SCHEMAS = {}
-FIELD_METADATA = {}
-
 PKS = {
     'conversations': ['id'],
     'conversation_threads': ['id'],
@@ -19,10 +16,9 @@ def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 def get_schemas():
-    global SCHEMAS, FIELD_METADATA
 
-    if SCHEMAS:
-        return SCHEMAS, FIELD_METADATA
+    schemas = {}
+    field_metadata = {}
 
     schemas_path = get_abs_path('schemas')
 
@@ -33,13 +29,13 @@ def get_schemas():
         stream_name = file_name[:-5]
         with open(os.path.join(schemas_path, file_name)) as data_file:
             schema = json.load(data_file)
-            
-        SCHEMAS[stream_name] = schema
-        pk = PKS[stream_name]
+
+        schemas[stream_name] = schema
+        primary_key = PKS[stream_name]
 
         metadata = []
-        for prop, json_schema in schema['properties'].items():
-            if prop in pk:
+        for prop in schema['properties'].items():
+            if prop[0] in primary_key:
                 inclusion = 'automatic'
             else:
                 inclusion = 'available'
@@ -47,8 +43,8 @@ def get_schemas():
                 'metadata': {
                     'inclusion': inclusion
                 },
-                'breadcrumb': ['properties', prop]
+                'breadcrumb': ['properties', prop[0]]
             })
-        FIELD_METADATA[stream_name] = metadata
+        field_metadata[stream_name] = metadata
 
-    return SCHEMAS, FIELD_METADATA
+    return schemas, field_metadata
