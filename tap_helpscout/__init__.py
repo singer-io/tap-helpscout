@@ -3,9 +3,8 @@
 import sys
 import json
 import argparse
-
 import singer
-from singer import metadata
+from singer import metadata, utils
 from tap_helpscout.client import HelpScoutClient
 from tap_helpscout.discover import discover
 from tap_helpscout.sync import sync
@@ -19,7 +18,7 @@ REQUIRED_CONFIG_KEYS = [
     'user_agent'
 ]
 
-def do_discover(client):
+def do_discover():
 
     LOGGER.info('Starting discover')
     catalog = discover()
@@ -33,13 +32,13 @@ def main():
     parsed_args = singer.utils.parse_args(REQUIRED_CONFIG_KEYS)
 
     with HelpScoutClient(parsed_args.config_path,
-                      parsed_args.config['client_id'],
-                      parsed_args.config['client_secret'],
-                      parsed_args.config['refresh_token'],
-                      parsed_args.config['user_agent']) as client:
-        
+                         parsed_args.config['client_id'],
+                         parsed_args.config['client_secret'],
+                         parsed_args.config['refresh_token'],
+                         parsed_args.config['user_agent']) as client:
+
         if parsed_args.discover:
-            do_discover(client)
+            do_discover()
         elif parsed_args.catalog:
             sync(client,
                  parsed_args.catalog,

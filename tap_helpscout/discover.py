@@ -1,5 +1,4 @@
 from singer.catalog import Catalog, CatalogEntry, Schema
-
 from tap_helpscout.schema import get_schemas, PKS
 
 def discover():
@@ -9,12 +8,12 @@ def discover():
     for stream_name, schema_dict in schemas.items():
         schema = Schema.from_dict(schema_dict)
         metadata = field_metadata[stream_name]
-        pk = PKS[stream_name]
+        primary_key = PKS[stream_name]
 
         catalog.streams.append(CatalogEntry(
             stream=stream_name,
             tap_stream_id=stream_name,
-            key_properties=pk,
+            key_properties=primary_key,
             schema=schema,
             metadata=metadata
         ))

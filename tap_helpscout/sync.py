@@ -1,13 +1,5 @@
-import re
-import json
-import time
-import random
-import tarfile
-from datetime import datetime, timedelta
-
-import requests
 import singer
-from singer import metrics, metadata, Transformer
+from singer import metrics, metadata, Transformer, utils
 from tap_helpscout.transform import transform_json
 
 LOGGER = singer.get_logger()
@@ -21,6 +13,7 @@ def write_schema(catalog, stream_name):
 def process_records(catalog,
                     stream_name,
                     records,
+                    time_extracted,
                     persist=True,
                     bookmark_field=None,
                     max_bookmark_field=None,
@@ -43,13 +36,13 @@ def process_records(catalog,
                     record = transformer.transform(record,
                                                    schema,
                                                    stream_metadata)
-                singer.write_record(stream_name, record)
+                singer.write_record(stream_name, record, time_extracted=time_extracted)
                 counter.increment()
         return max_bookmark_field
 
 def get_bookmark(state, path, default):
     dic = state
-    for key in (['bookmarks'] + path):
+    for key in ['bookmarks'] + path:
         if key in dic:
             dic = dic[key]
         else:
@@ -104,7 +97,7 @@ def sync_endpoint(client,
         if bookmark_query_field:
             params[bookmark_query_field] = last_datetime
 
-        LOGGER.info('{} - Sync start'.format(
+        LOGGER.info('{} - Sync start {}'.format(
             stream_name,
             'since: {}, '.format(last_datetime) if bookmark_query_field else ''))
 
@@ -117,9 +110,12 @@ def sync_endpoint(client,
         if '_embedded' in data:
             raw_records = transform_json(data["_embedded"], data_key)[data_key]
 
+        time_extracted = utils.now()
+
         max_bookmark_field = process_records(catalog=catalog,
                                              stream_name=stream_name,
                                              records=map(transform, raw_records),
+                                             time_extracted=time_extracted,
                                              persist=persist,
                                              bookmark_field=bookmark_field,
                                              max_bookmark_field=max_bookmark_field,
@@ -161,7 +157,6 @@ def sync_stream(client,
                 endpoint_config,
                 bookmark_path=None,
                 id_path=None,
-                parent=None,
                 parent_id=None):
     if not bookmark_path:
         bookmark_path = [stream_name]
@@ -191,7 +186,7 @@ def sync_stream(client,
 
         if endpoint_config.get('store_ids'):
             id_bag[stream_name] = stream_ids
-        
+
         children = endpoint_config.get('children')
         if children:
             for child_stream_name, child_endpoint_config in children.items():
@@ -206,7 +201,6 @@ def sync_stream(client,
                                 endpoint_config=child_endpoint_config,
                                 bookmark_path=bookmark_path + [_id, child_stream_name],
                                 id_path=id_path + [_id],
-                                parent=child_endpoint_config.get('parent'),
                                 parent_id=_id)
 
 
@@ -254,7 +248,7 @@ def sync(client, catalog, state, start_date):
             'bookmark_field': 'user_updated_at',
             'store_ids': True,
             'children': {
-               'conversation_threads': {
+                'conversation_threads': {
                     'path': '/conversations/{}/threads',
                     'data_path': 'threads',
                     'bookmark_field': 'created_at',
@@ -262,7 +256,7 @@ def sync(client, catalog, state, start_date):
                 }
             }
         },
-        
+
         'customers': {
             'path': '/customers',
             'params': {
@@ -273,14 +267,14 @@ def sync(client, catalog, state, start_date):
             'bookmark_query_field': 'modifiedSince',
             'bookmark_field': 'updated_at'
         },
-        
+
         'mailboxes': {
             'path': '/mailboxes',
             'data_path': 'mailboxes',
             'bookmark_field': 'updated_at',
             'store_ids': True,
             'children': {
-               'mailbox_fields': {
+                'mailbox_fields': {
                     'path': '/mailboxes/{}/fields',
                     'data_path': 'fields',
                     'parent': 'mailbox'
@@ -293,13 +287,13 @@ def sync(client, catalog, state, start_date):
                 }
             }
         },
-        
+
         'users': {
             'path': '/users',
             'data_path': 'users',
             'bookmark_field': 'updated_at'
         },
-        
+
         'workflows': {
             'path': '/workflows',
             'data_path': 'workflows',
@@ -308,11 +302,11 @@ def sync(client, catalog, state, start_date):
     }
 
     for stream_name, endpoint_config in endpoints.items():
-        sync_stream(client,
-                    catalog,
-                    state,
-                    start_date,
-                    streams_to_sync,
-                    id_bag,
-                    stream_name,
-                    endpoint_config)
+        sync_stream(client=client,
+                    catalog=catalog,
+                    state=state,
+                    start_date=start_date,
+                    streams_to_sync=streams_to_sync,
+                    id_bag=id_bag,
+                    stream_name=stream_name,
+                    endpoint_config=endpoint_config)
