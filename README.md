@@ -44,7 +44,7 @@ This tap:
     ```
     - [singer-tools](https://github.com/singer-io/singer-tools)
     - [target-stitch](https://github.com/singer-io/target-stitch)
-3. Create your tap's config file which should look like the following:
+3. Create your tap's `config.json` file which should look like the following:
 
     ```json
     {
@@ -54,23 +54,25 @@ This tap:
         "start_date": "2017-04-19T13:37:30Z"
     }
     ```
+    
+    Optionally, also create a `state.json` file. `currently_syncing` is an optional attribute used for identifying the last object to be synced in case the job is interrupted mid-stream. The next run would begin where the last job left off.
 
-4. [Optional] Create the initial state file
-
-    ```json
+    ```
     {
-        "conversations": "2000-01-01T00:00:00Z",
-        "conversation_threads": "2000-01-01T00:00:00Z",
-        "customers": "2000-01-01T00:00:00Z",
-        "mailboxes": "2000-01-01T00:00:00Z",
-        "mailbox_fields": "2000-01-01T00:00:00Z",
-        "mailbox_folders": "2000-01-01T00:00:00Z",
-        "users": "2000-01-01T00:00:00Z",
-        "workflows": "2000-01-01T00:00:00Z"
+        "currently_syncing": "users",
+        "bookmarks": {
+            "customers": "2019-06-11T13:37:55Z",
+            "mailbox_folders": "2019-06-19T19:48:42Z",
+            "mailboxes": "2019-06-18T18:23:58Z",
+            "users": "2019-06-20T00:52:46Z",
+            "workflows": "2019-06-19T19:48:44Z",
+            "conversation_threads": "2019-06-11T13:37:55Z",
+            "conversations": "2019-06-11T13:37:55Z"
+        }
     }
     ```
 
-5. Run the Tap in Discovery Mode
+4. Run the Tap in Discovery Mode
     This creates a catalog.json for selecting objects/fields to integrate:
     ```bash
     tap-helpscout --config config.json --discover > catalog.json
@@ -78,25 +80,25 @@ This tap:
    See the Singer docs on discovery mode
    [here](https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md#discovery-mode).
 
-6. Run the Tap in Sync Mode (with catalog) and [write out to state file](https://github.com/singer-io/getting-started/blob/master/docs/RUNNING_AND_DEVELOPING.md#running-a-singer-tap-with-a-singer-target)
+5. Run the Tap in Sync Mode (with catalog) and [write out to state file](https://github.com/singer-io/getting-started/blob/master/docs/RUNNING_AND_DEVELOPING.md#running-a-singer-tap-with-a-singer-target)
 
     For Sync mode:
     ```bash
-    > tap-helpscout --config tap_config.json --catalog catalog.json >> state.json
+    > tap-helpscout --config tap_config.json --catalog catalog.json > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
     To load to json files to verify outputs:
     ```bash
-    > tap-helpscout --config tap_config.json --catalog catalog.json | target-json >> state.json
+    > tap-helpscout --config tap_config.json --catalog catalog.json | target-json > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
     To pseudo-load to [Stitch Import API](https://github.com/singer-io/target-stitch) with dry run:
     ```bash
-    > tap-helpscout --config tap_config.json --catalog catalog.json | target-stitch --config target_config.json --dry-run >> state.json
+    > tap-helpscout --config tap_config.json --catalog catalog.json | target-stitch --config target_config.json --dry-run > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
 
-7. Test the Tap
+6. Test the Tap
     
     While developing the HelpScout tap, the following utilities were run in accordance with Singer.io best practices:
     Pylint to improve [code quality](https://github.com/singer-io/getting-started/blob/master/docs/BEST_PRACTICES.md#code-quality):
@@ -105,35 +107,35 @@ This tap:
     ```
     Pylint test resulted in the following score:
     ```bash
-    Your code has been rated at 10.00/10 (previous run: 9.75/10, +0.25)
+    Your code has been rated at 10.00/10 (previous run: 9.97/10, +0.03)
     ```
 
     To [check the tap](https://github.com/singer-io/singer-tools#singer-check-tap) and verify working:
     ```bash
-    > tap-helpscout --config tap_config.json --catalog catalog.json | singer-check-tap >> state.json
+    > tap-helpscout --config tap_config.json --catalog catalog.json | singer-check-tap > state.json
     > tail -1 state.json > state.json.tmp && mv state.json.tmp state.json
     ```
     Check tap resulted in the following:
     ```bash
     The output is valid.
-    It contained 135 messages for 8 streams.
+    It contained 150 messages for 8 streams.
 
-        16 schema messages
-        103 record messages
-        16 state messages
+        20 schema messages
+        111 record messages
+        19 state messages
 
     Details by stream:
     +----------------------+---------+---------+
     | stream               | records | schemas |
     +----------------------+---------+---------+
-    | conversation_threads | 15      | 7       |
-    | conversations        | 7       | 1       |
-    | mailbox_fields       | 5       | 2       |
+    | workflows            | 7       | 1       |
+    | users                | 3       | 1       |
     | mailboxes            | 2       | 1       |
-    | workflows            | 6       | 1       |
-    | mailbox_folders      | 17      | 2       |
-    | customers            | 49      | 1       |
-    | users                | 2       | 1       |
+    | conversation_threads | 22      | 11      |
+    | mailbox_folders      | 9       | 2       |
+    | mailbox_fields       | 5       | 2       |
+    | conversations        | 11      | 1       |
+    | customers            | 52      | 1       |
     +----------------------+---------+---------+
     ```
 ---

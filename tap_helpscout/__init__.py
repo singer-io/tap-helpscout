@@ -37,13 +37,17 @@ def main():
                          parsed_args.config['refresh_token'],
                          parsed_args.config['user_agent']) as client:
 
+        state = {}
+        if parsed_args.state:
+            state = parsed_args.state
+
         if parsed_args.discover:
             do_discover()
         elif parsed_args.catalog:
-            sync(client,
-                 parsed_args.catalog,
-                 parsed_args.state,
-                 parsed_args.config['start_date'])
+            sync(client=client,
+                 catalog=parsed_args.catalog,
+                 state=state,
+                 start_date=parsed_args.config['start_date'])
 
 if __name__ == '__main__':
     main()
