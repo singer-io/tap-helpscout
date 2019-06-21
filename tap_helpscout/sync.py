@@ -80,6 +80,7 @@ def write_bookmark(state, stream, value):
     singer.write_state(state)
 
 
+# Sync a specific parent or child endpoint.
 def sync_endpoint(client,
                   catalog,
                   state,
@@ -97,6 +98,7 @@ def sync_endpoint(client,
                   parent_id=None):
     bookmark_path = bookmark_path + [bookmark_field]
 
+    # Get the latest bookmark for the stream and set the last_integer/datetime
     last_datetime = None
     last_integer = None
     max_bookmark_value = None
@@ -107,8 +109,7 @@ def sync_endpoint(client,
         last_datetime = get_bookmark(state, stream_name, start_date)
         max_bookmark_value = last_datetime
 
-    ids = []
-
+    ids = [] # Initialize the ids collection
     # Stores parent object ids in id_bag for children
     def transform(record, id_field='id'):
         _id = record.get(id_field)
@@ -145,16 +146,19 @@ def sync_endpoint(client,
             path,
             params=querystring,
             endpoint=stream_name)
+        # time_extracted: datetime when the data was extracted from the API
+        time_extracted = utils.now()
 
         # Transform data with transform_json from transform.py
         #  This function denests _embedded, removes _embedded/_links, and
         #  converst camelCase to snake_case for fieldname keys.
         transformed_data = []
+        # For the HelpScout API, _embedded is always the root element.
+        # The data_key identifies the collection of records below the _embedded element
         if '_embedded' in data:
             transformed_data = transform_json(data["_embedded"], data_key)[data_key]
 
-        time_extracted = utils.now()
-
+        # Process records and get the max_bookmark_value for the set of records
         max_bookmark_value = process_records(
             catalog=catalog,
             stream_name=stream_name,
@@ -168,6 +172,7 @@ def sync_endpoint(client,
             parent=parent,
             parent_id=parent_id)
 
+        # Update the state with the max_bookmark_value for the stream
         if bookmark_field:
             write_bookmark(state,
                            stream_name,
@@ -186,9 +191,11 @@ def sync_endpoint(client,
             break
         page = page + 1
 
+    # Return the list of ids to the stream, in case this is a parent stream with children.
     return ids
 
 
+# Sync a specific stream and its children streams.
 def sync_stream(client,
                 catalog,
                 state,
@@ -222,11 +229,13 @@ def sync_stream(client,
         parent=endpoint_config.get('parent'),
         parent_id=parent_id)
 
+    # Stores IDs for parent streams, to be loop through for children
     if endpoint_config.get('store_ids'):
         id_bag[stream_name] = stream_ids
 
     children = endpoint_config.get('children')
     if children:
+        # Loop through parent IDs for each child element
         for child_stream_name, child_endpoint_config in children.items():
             for _id in stream_ids:
                 sync_stream(
@@ -253,6 +262,10 @@ def get_selected_streams(catalog):
     return list(selected_streams)
 
 
+# Currently syncing sets the stream currently being delivered in the state.
+# If the integration is interrupted, this state property is used to identify
+#  the starting point to continue from.
+# Reference: https://github.com/singer-io/singer-python/blob/master/singer/bookmarks.py#L41-L46
 def update_currently_syncing(state, stream_name):
     if (stream_name is None) and ('currently_syncing' in state):
         del state['currently_syncing']
@@ -280,9 +293,25 @@ def sync(client, catalog, state, start_date):
     if not selected_streams:
         return
 
+    # last_stream = Previous currently synced stream, if the load was interrupted
     last_stream = singer.get_currently_syncing(state)
     id_bag = {}
 
+
+    # endpoints: API URL endpoints to be called
+    # properties:
+    #   <root node>: Plural stream name for the endpoint
+    #   path: API endpoint relative path, when added to the base URL, creates the full path
+    #   params: Query, sort, and other endpoint specific parameters
+    #   data_path: JSON element containing the records for the endpoint
+    #   bookmark_query_field: Typically a date-time field used for filtering the query
+    #   bookmark_field: Replication key field, typically a date-time, used for filtering the results
+    #        and setting the state
+    #   bookmark_type: Data type for bookmark, integer or datetime
+    #   id_field: Primary key property for the record
+    #   store_ids: Used for parent endpoints to create an id_bag collection of ids for children endpoints
+    #   children: A collection of child endpoints (where the endpoint path includes the parent id)
+    #   parent: On each of the children, the singular stream name for parent element
     endpoints = {
         'conversations': {
             'path': '/conversations',
@@ -364,6 +393,8 @@ def sync(client, catalog, state, start_date):
         }
     }
 
+    # For each endpoint (above), determine if the stream should be streamed
+    #   (based on the catalog and last_stream), then sync those streams.
     for stream_name, endpoint_config in endpoints.items():
         should_stream, last_stream = should_sync_stream(selected_streams,
                                                         last_stream,

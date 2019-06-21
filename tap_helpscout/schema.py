@@ -2,6 +2,7 @@ import os
 import json
 from singer.metadata import get_standard_metadata
 
+# Reference: https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md#Metadata
 STREAMS = {
     'conversations': {
         'key_properties': ['id'],
@@ -25,7 +26,7 @@ STREAMS = {
     },
     'mailbox_fields': {
         'key_properties': ['id'],
-        'replication_method': 'FULL'
+        'replication_method': 'FULL_TABLE'
     },
     'mailbox_folders': {
         'key_properties': ['id'],
@@ -58,6 +59,8 @@ def get_schemas():
             schema = json.load(file)
         schemas[stream_name] = schema
         metadata = []
+        # Documentation: https://github.com/singer-io/getting-started/blob/master/docs/DISCOVERY_MODE.md#singer-python-helper-functions
+        # Reference: https://github.com/singer-io/singer-python/blob/master/singer/metadata.py#L25-L44
         metadata.append (get_standard_metadata(
             schema=schema,
             schema_name=stream_name,
