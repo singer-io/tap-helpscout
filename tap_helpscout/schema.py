@@ -1,50 +1,70 @@
 import os
 import json
+from singer.metadata import get_standard_metadata
 
-PKS = {
-    'conversations': ['id'],
-    'conversation_threads': ['id'],
-    'customers': ['id'],
-    'mailboxes': ['id'],
-    'mailbox_fields': ['id'],
-    'mailbox_folders': ['id'],
-    'users': ['id'],
-    'workflows': ['id']
+STREAMS = {
+    'conversations': {
+        'key_properties': ['id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['user_updated_at']
+    },
+    'conversation_threads': {
+        'key_properties': ['id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['created_at']
+    },
+    'customers': {
+        'key_properties': ['id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['updated_at']
+    },
+    'mailboxes': {
+        'key_properties': ['id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['updated_at']
+    },
+    'mailbox_fields': {
+        'key_properties': ['id'],
+        'replication_method': 'FULL'
+    },
+    'mailbox_folders': {
+        'key_properties': ['id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['updated_at']
+    },
+    'users': {
+        'key_properties': ['id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['updated_at']
+    },
+    'workflows': {
+        'key_properties': ['id'],
+        'replication_method': 'INCREMENTAL',
+        'replication_keys': ['modified_at']
+    }
 }
+
 
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 def get_schemas():
-
     schemas = {}
     field_metadata = {}
 
-    schemas_path = get_abs_path('schemas')
-
-    file_names = [f for f in os.listdir(schemas_path)
-                  if os.path.isfile(os.path.join(schemas_path, f))]
-
-    for file_name in file_names:
-        stream_name = file_name[:-5]
-        with open(os.path.join(schemas_path, file_name)) as data_file:
-            schema = json.load(data_file)
-
+    for stream_name, stream_metadata in STREAMS.items():
+        schema_path = get_abs_path('schemas/{}.json'.format(stream_name))
+        with open(schema_path) as file:
+            schema = json.load(file)
         schemas[stream_name] = schema
-        primary_key = PKS[stream_name]
-
         metadata = []
-        for prop in schema['properties'].items():
-            if prop[0] in primary_key:
-                inclusion = 'automatic'
-            else:
-                inclusion = 'available'
-            metadata.append({
-                'metadata': {
-                    'inclusion': inclusion
-                },
-                'breadcrumb': ['properties', prop[0]]
-            })
+        metadata.append (get_standard_metadata(
+            schema=schema,
+            schema_name=stream_name,
+            key_properties=stream_metadata.get('key_properties', None),
+            valid_replication_keys=stream_metadata.get('replication_keys', None),
+            replication_method=stream_metadata.get('replication_method', None)
+        ))
         field_metadata[stream_name] = metadata
 
     return schemas, field_metadata
