@@ -279,6 +279,7 @@ def sync(client, catalog, state, start_date):
         'conversations': {
             'path': '/conversations',
             'params': {
+                'status': 'all',
                 'sortField': 'modifiedAt',
                 'sortOrder': 'asc'
             },
@@ -369,3 +370,4 @@ def sync(client, catalog, state, start_date):
                 id_bag=id_bag,
                 stream_name=stream_name,
                 endpoint_config=endpoint_config)
+            singer.set_currently_syncing(state, None)
