@@ -253,6 +253,14 @@ def get_selected_streams(catalog):
     return list(selected_streams)
 
 
+def update_currently_syncing(state, stream_name):
+    if (stream_name is None) and ('currently_syncing' in state):
+        del state['currently_syncing']
+    else:
+        singer.set_currently_syncing(state, stream_name)
+    singer.write_state(state)
+
+
 # Review last_stream (last currently syncing stream), if any,
 #  and continue where it left off in the selected streams.
 # Or begin from the beginning, if no last_stream, and sync
@@ -361,7 +369,7 @@ def sync(client, catalog, state, start_date):
                                                         last_stream,
                                                         stream_name)
         if should_stream:
-            singer.set_currently_syncing(state, stream_name)
+            update_currently_syncing(state, stream_name)
             sync_stream(
                 client=client,
                 catalog=catalog,
@@ -370,4 +378,4 @@ def sync(client, catalog, state, start_date):
                 id_bag=id_bag,
                 stream_name=stream_name,
                 endpoint_config=endpoint_config)
-            singer.set_currently_syncing(state, None)
+            update_currently_syncing(state, None)
