@@ -16,3 +16,4 @@ __pycache__/
 venv/
 build/
 
+tap_helpscout/.vscode/settings.json
