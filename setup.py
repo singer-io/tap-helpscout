@@ -8,7 +8,11 @@ setup(name='tap-helpscout',
       author='jeff.huth@bytecode.io',
       classifiers=['Programming Language :: Python :: 3 :: Only'],
       py_modules=['tap_helpscout'],
-      install_requires=[],
+      install_requires=[
+          'backoff==1.3.2',
+          'requests==2.20.0',
+          'singer-python==5.6.1'
+      ],
       entry_points='''
           [console_scripts]
           tap-helpscout=tap_helpscout:main
