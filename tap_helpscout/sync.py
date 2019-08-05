@@ -237,18 +237,24 @@ def sync_stream(client,
     if children:
         # Loop through parent IDs for each child element
         for child_stream_name, child_endpoint_config in children.items():
-            for _id in stream_ids:
-                sync_stream(
-                    client=client,
-                    catalog=catalog,
-                    state=state,
-                    start_date=start_date,
-                    id_bag=id_bag,
-                    stream_name=child_stream_name,
-                    endpoint_config=child_endpoint_config,
-                    bookmark_path=bookmark_path + [_id, child_stream_name],
-                    id_path=id_path + [_id],
-                    parent_id=_id)
+            should_stream, last_stream_child = should_sync_stream(get_selected_streams(catalog),
+                                                        None,
+                                                        child_stream_name)
+            if should_stream:
+                LOGGER.info('START Syncing: {}'.format(child_stream_name))
+                for _id in stream_ids:
+                    sync_stream(
+                        client=client,
+                        catalog=catalog,
+                        state=state,
+                        start_date=start_date,
+                        id_bag=id_bag,
+                        stream_name=child_stream_name,
+                        endpoint_config=child_endpoint_config,
+                        bookmark_path=bookmark_path + [_id, child_stream_name],
+                        id_path=id_path + [_id],
+                        parent_id=_id)
+                LOGGER.info('FINISHED Syncing: {}'.format(child_stream_name))
 
 
 # Review catalog and make a list of selected streams
@@ -400,6 +406,7 @@ def sync(client, catalog, state, start_date):
                                                         last_stream,
                                                         stream_name)
         if should_stream:
+            LOGGER.info('START Syncing: {}'.format(stream_name))
             update_currently_syncing(state, stream_name)
             sync_stream(
                 client=client,
@@ -410,3 +417,4 @@ def sync(client, catalog, state, start_date):
                 stream_name=stream_name,
                 endpoint_config=endpoint_config)
             update_currently_syncing(state, None)
+            LOGGER.info('FINISHED Syncing: {}'.format(stream_name))
