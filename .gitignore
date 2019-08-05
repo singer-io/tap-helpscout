@@ -2,9 +2,9 @@
 /.ipynb_checkpoints/*
 config/
 virtualenvs/
-catalog.json
-*config.json
-state.json
+*catalog*.json
+*config*.json
+*state*.json
 target*.json
 *.sublime-*
 .python-version
