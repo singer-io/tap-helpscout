@@ -48,7 +48,7 @@ def denest_embedded_nodes(this_json, path=None):
     if path is None:
         return this_json
     i = 0
-    nodes = ['attachments', "address", "chats", "emails", "phones", "social_profiles", "websites"]
+    nodes = ["attachments", "address", "chats", "emails", "phones", "social_profiles", "websites"]
     for record in this_json[path]:
         if "_embedded" in record:
             for node in nodes:
