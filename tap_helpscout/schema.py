@@ -12,8 +12,7 @@ STREAMS = {
     },
     'conversation_threads': {
         'key_properties': ['id'],
-        'replication_method': 'INCREMENTAL',
-        'replication_keys': ['created_at']
+        'replication_method': 'FULL_TABLE'
     },
     'customers': {
         'key_properties': ['id'],
