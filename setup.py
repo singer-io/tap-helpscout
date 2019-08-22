@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='tap-helpscout',
-      version='0.0.4',
+      version='0.0.5',
       description='Singer.io tap for extracting data from the HelpScout Mailbox API 2.0',
       author='jeff.huth@bytecode.io',
       classifiers=['Programming Language :: Python :: 3 :: Only'],

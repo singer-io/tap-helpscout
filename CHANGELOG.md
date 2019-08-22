@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.5
+  * Update `README.md` documentation for each endpoint
+
 ## 0.0.4
   * Adjust `sync.py` to simplify and fix issue with missing child `conversation_threads`
   * Update `README.md` documentation

@@ -19,6 +19,80 @@ This tap:
 - Outputs the schema for each resource
 - Incrementally pulls data based on the input state
 
+## Streams
+[**conversations**](https://developer.helpscout.com/mailbox-api/endpoints/conversations/list/)
+- Endpoint: https://api.helpscout.net/v2/conversations
+- Primary keys: id
+- Foreign keys: mailbox_id (mailboxes), assignee > id (users), created_by > id (users), primary_customer > id (customers), custom_fields > id (mailbox_fields)
+- Replication strategy: Incremental (query filtered)
+  - Bookmark query parameter: modifiedSince
+  - Sort by: modifiedAt ascending
+  - Bookmark: user_updated_at (date-time)
+- Transformations: Fields camelCase to snake_case
+- Children: conversation_threads
+
+[**conversation_threads**](https://developer.helpscout.com/mailbox-api/endpoints/conversations/threads/list/)
+- Endpoint: https://api.helpscout.net/v2/conversations/{conversation_id}/threads
+- Primary keys: id
+- Foreign keys: conversation_id (conversations), customer > id (customers), created_by > id (users), assigned_to > id (users)
+- Replication strategy: Full table (ALL for each parent Conversation)
+  - Bookmark: None
+- Transformations: Fields camelCase to snake_case. De-nest attachments array node. Add parent conversation_id field.
+- Parent: conversations
+
+[**customers**](https://developer.helpscout.com/mailbox-api/endpoints/customers/list/)
+- Endpoint: https://api.helpscout.net/v2/customers
+- Primary keys: id
+- Foreign keys: None
+- Replication strategy: Incremental (query filtered)
+  - Bookmark query parameter: modifiedSince
+  - Sort by: modifiedAt ascending
+  - Bookmark: updated_at (date-time)
+- Transformations: Fields camelCase to snake_case. De-nest the following nodes: address, chats, emails, phones, social_profiles, websites.
+
+[**mailboxes**](https://developer.helpscout.com/mailbox-api/endpoints/mailboxes/list/)
+- Endpoint: https://api.helpscout.net/v2/mailboxes
+- Primary keys: id
+- Foreign keys: None
+- Replication strategy: Incremental (query all, filter results)
+  - Bookmark: updated_at (date-time)
+- Transformations: Fields camelCase to snake_case.
+- Children: mailbox_fields, mailbox_folders
+
+[**mailbox_fields**](https://developer.helpscout.com/mailbox-api/endpoints/mailboxes/mailbox-fields/)
+- Endpoint: https://api.helpscout.net/v2/mailboxes/{mailbox_id}/fields
+- Primary keys: id
+- Foreign keys: mailbox_id (mailboxes)
+- Replication strategy: Full table (ALL for each parent Mailbox)
+  - Bookmark: None
+- Transformations: Fields camelCase to snake_case. Add parent mailbox_id field.
+- Parent: mailboxes
+
+[**mailbox_folders**](https://developer.helpscout.com/mailbox-api/endpoints/mailboxes/mailbox-folders/)
+- Endpoint: https://api.helpscout.net/v2/mailboxes/{mailbox_id}/folders
+- Primary keys: id
+- Foreign keys: mailbox_id (mailboxes)
+- Replication strategy: Incremental (query all, filter results)
+  - Bookmark: updated_at (date-time)
+- Transformations: Fields camelCase to snake_case. Add parent mailbox_id field.
+- Parent: mailboxes
+
+[**users**](https://developer.helpscout.com/mailbox-api/endpoints/users/list/)
+- Endpoint: https://api.helpscout.net/v2/users
+- Primary keys: id
+- Foreign keys: None
+- Replication strategy: Incremental (query all, filter results)
+  - Bookmark: updated_at (date-time)
+- Transformations: Fields camelCase to snake_case.
+
+[**workflows**](https://developer.helpscout.com/mailbox-api/endpoints/workflows/list/)
+- Endpoint: https://api.helpscout.net/v2/users
+- Primary keys: id
+- Foreign keys: mailbox_id (mailboxes)
+- Replication strategy: Incremental (query all, filter results)
+  - Bookmark: modified_at (date-time)
+- Transformations: Fields camelCase to snake_case.
+
 ## Quick Start
 
 1. Install
