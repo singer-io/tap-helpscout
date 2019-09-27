@@ -24,10 +24,10 @@ This tap:
 - Endpoint: https://api.helpscout.net/v2/conversations
 - Primary keys: id
 - Foreign keys: mailbox_id (mailboxes), assignee > id (users), created_by > id (users), primary_customer > id (customers), custom_fields > id (mailbox_fields)
-- Replication strategy: Incremental (query filtered)
-  - Bookmark query parameter: modifiedSince
+- Replication strategy: Full table
+  - Filter: status = all
   - Sort by: modifiedAt ascending
-  - Bookmark: user_updated_at (date-time)
+  - Bookmark: None
 - Transformations: Fields camelCase to snake_case
 - Children: conversation_threads
 
@@ -92,6 +92,41 @@ This tap:
 - Replication strategy: Incremental (query all, filter results)
   - Bookmark: modified_at (date-time)
 - Transformations: Fields camelCase to snake_case.
+
+
+## Authentication
+[Refresh Access Token](https://developer.helpscout.com/mailbox-api/overview/authentication/#4-refresh-access-token)
+The tap should provides a `refresh_token`, `client_id` and `client_secret` to get an `access_token` when the tap starts. If/when the access_token expires in the middle of a run, the tap gets a new `access_token` and `refresh_token`. The `refresh_token` expires every use and new one is generated and persisted in the tap `config.json` until the next authentication.
+To generate the necessary API keys: `client_id` and `client_secret`, follow these instructions to [Create My App](https://developer.helpscout.com/mailbox-api/overview/authentication/#oauth2-application) in your User Profile of the HelpScout web console application.
+- App Name: tap-helpscout
+- Redirect URL: https://app.stitchdata.test:8080/v2/integrations/platform.helpscout/callback
+Record your credentials (for the tap config.json):
+- App ID: `client_id`
+- App Secret: `client_secret`
+
+Authentication URL: https://secure.helpscout.net/authentication/authorizeClientApplication?client_id=`YOUR_CLIENT_ID`&state=`YOUR_CLIENT_SECRET`
+Adjust the above URL by replacing `YOUR_CLIENT_ID` and `YOUR_CLIENT_SECRET`. In your web browser, disable any ad/popup blockers, and navigate to the Authorize URL. Click Authorize and you will be redirected to your Redirect URL (from above). Record the `code` from the redirected browser URL in the browser header.
+
+Authentication curl: Run the following curl command (from the command line or REST client) with the parameters replaced to return your access_token and refresh_token. This is a POST request.
+```bash
+> curl -0 -v -X POST https://api.helpscout.net/v2/oauth2/token
+    -H "Accept: application/json"\
+    -H "application/x-www-form-urlencoded"\
+    -d "grant_type=authorization_code"\
+    -d "code=YOUR_CODE"\
+    -d "client_id=YOUR_CLIENT_ID"\
+    -d "client_secret=YOUR_CLIENT_SECRET"
+```
+Record your `client_id`, `client_secret`, and the returned `refresh_token` into your tap `config.json`, which should look like the following:
+
+    ```json
+    {
+        "client_id": "OAUTH_CLIENT_ID",
+        "client_secret": "OAUTH_CLIENT_SECRET",
+        "refresh_token": "YOUR_OAUTH_REFRESH_TOKEN",
+        "start_date": "2017-04-19T13:37:30Z"
+    }
+    ```
 
 ## Quick Start
 

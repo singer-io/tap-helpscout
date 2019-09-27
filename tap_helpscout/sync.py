@@ -290,7 +290,6 @@ def sync(client, catalog, state, start_date):
                 'sortOrder': 'asc'
             },
             'data_key': 'conversations',
-            'bookmark_query_field': 'modifiedSince',
             'bookmark_field': 'user_updated_at',
             'bookmark_type': 'datetime',
             'id_field': 'id',

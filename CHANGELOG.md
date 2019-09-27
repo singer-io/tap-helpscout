@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.6
+  * Fix issue with sync for `conversations` and child `conversation_threads`. Change to FULL_TABLE replication.
+
 ## 0.0.5
   * Update `README.md` documentation for each endpoint
 

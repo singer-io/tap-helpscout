@@ -17,3 +17,5 @@ venv/
 build/
 
 tap_helpscout/.vscode/settings.json
+tap_target_commands.sh
+.DS_Store
