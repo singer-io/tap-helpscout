@@ -24,10 +24,10 @@ This tap:
 - Endpoint: https://api.helpscout.net/v2/conversations
 - Primary keys: id
 - Foreign keys: mailbox_id (mailboxes), assignee > id (users), created_by > id (users), primary_customer > id (customers), custom_fields > id (mailbox_fields)
-- Replication strategy: Full table
+- Replication strategy: Incremental (query all, filter results)
   - Filter: status = all
   - Sort by: modifiedAt ascending
-  - Bookmark: None
+  - Bookmark: user_updated_at
 - Transformations: Fields camelCase to snake_case
 - Children: conversation_threads
 
