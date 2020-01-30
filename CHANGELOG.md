@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0
+  * Releasing from Beta --> GA
+
 ## 0.0.5
   * Update `README.md` documentation for each endpoint
 
