@@ -1,4 +1,5 @@
-/.vscode/*
+.vscode
+.DS_Store
 /.ipynb_checkpoints/*
 config/
 virtualenvs/
@@ -8,12 +9,12 @@ virtualenvs/
 target*.json
 *.sublime-*
 .python-version
-singer-check-tap-data
+singer-check-tap*
 *.pyc
 *.egg-info
 dist/
 __pycache__/
 venv/
 build/
-
+tap_target_commands.sh
 tap_helpscout/.vscode/settings.json

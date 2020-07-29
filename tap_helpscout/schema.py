@@ -8,7 +8,7 @@ STREAMS = {
     'conversations': {
         'key_properties': ['id'],
         'replication_method': 'INCREMENTAL',
-        'replication_keys': ['user_updated_at']
+        'replication_keys': ['updated_at']
     },
     'conversation_threads': {
         'key_properties': ['id'],
