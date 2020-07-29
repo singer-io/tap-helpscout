@@ -171,9 +171,10 @@ def sync_endpoint(client,
         children = endpoint_config.get('children')
         if children:
             for child_stream_name, child_endpoint_config in children.items():
-                should_stream, last_stream_child = should_sync_stream(get_selected_streams(catalog),
-                                                            None,
-                                                            child_stream_name)
+                should_stream, last_stream_child = should_sync_stream(
+                    get_selected_streams(catalog),
+                    None,
+                    child_stream_name)
                 if should_stream:
                     for record in transformed_data:
                         parent_id = record.get('id')
@@ -290,7 +291,6 @@ def sync(client, catalog, state, start_date):
                 'sortOrder': 'asc'
             },
             'data_key': 'conversations',
-            'bookmark_query_field': 'modifiedSince',
             'bookmark_field': 'user_updated_at',
             'bookmark_type': 'datetime',
             'id_field': 'id',

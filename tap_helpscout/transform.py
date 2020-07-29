@@ -58,9 +58,29 @@ def denest_embedded_nodes(this_json, path=None):
     return this_json
 
 
+# Add updated_at (bookmark) to conversations based on max of 2 other datetimes
+def transform_conversations(this_json, path=None):
+    if path is None:
+        return this_json
+    i = 0
+    for record in this_json[path]:
+        user_updated_at = record.get('user_updated_at')
+        customer_waiting_since = record.get('customer_waiting_since', {}).get('time')
+        updated_at = max(user_updated_at, customer_waiting_since)
+        this_json[path][i]['updated_at'] = updated_at
+        i = i + 1
+    return this_json
+
+
 # Run all transforms: denests _embedded, removes _embedded/_links, and
 #  converst camelCase to snake_case for fieldname keys.
 def transform_json(this_json, path):
-    transformed_json = convert_json(remove_embedded_links(\
-                    denest_embedded_nodes(this_json, path)))
+    denested_json = denest_embedded_nodes(this_json, path)
+    no_links_json = remove_embedded_links(denested_json)
+    converted_json =  convert_json(no_links_json)
+    if path == 'conversations':
+        transformed_json = transform_conversations(converted_json, path)
+    else:
+        transformed_json = converted_json
+    
     return transformed_json

@@ -84,6 +84,10 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "closed_by": {
       "type": ["null", "integer"]
     },
