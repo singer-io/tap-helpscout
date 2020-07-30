@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.2
+  * Get max `updated_at` for `conversations` even if `None`.
+
 ## 1.0.1
   * Add `updated_at` as bookmark for `conversations`. This is a new bookmark field, based on max of 2 other datetimes in record.
 

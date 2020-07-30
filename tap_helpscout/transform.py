@@ -66,7 +66,10 @@ def transform_conversations(this_json, path=None):
     for record in this_json[path]:
         user_updated_at = record.get('user_updated_at')
         customer_waiting_since = record.get('customer_waiting_since', {}).get('time')
-        updated_at = max(user_updated_at, customer_waiting_since)
+        # Get max date, even if None
+        max_date = [user_updated_at, customer_waiting_since]
+        updated_at = max(i for i in max_date if i is not None)
+
         this_json[path][i]['updated_at'] = updated_at
         i = i + 1
     return this_json
