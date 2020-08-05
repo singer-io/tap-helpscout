@@ -160,7 +160,8 @@ Record your `client_id`, `client_secret`, and the returned `refresh_token` into 
         "client_id": "OAUTH_CLIENT_ID",
         "client_secret": "OAUTH_CLIENT_SECRET",
         "refresh_token": "YOUR_OAUTH_REFRESH_TOKEN",
-        "start_date": "2017-04-19T13:37:30Z"
+        "start_date": "2017-04-19T13:37:30Z",
+        "user_agent": "tap-helpscout <user@domain.com>"
     }
     ```
     
@@ -229,24 +230,24 @@ Record your `client_id`, `client_secret`, and the returned `refresh_token` into 
     The output is valid.
     It contained 150 messages for 8 streams.
 
-        20 schema messages
-        111 record messages
-        19 state messages
+          8 schema messages
+        124 record messages
+        18 state messages
 
     Details by stream:
     +----------------------+---------+---------+
     | stream               | records | schemas |
     +----------------------+---------+---------+
-    | workflows            | 7       | 1       |
-    | users                | 3       | 1       |
+    | conversations        | 17      | 1       |
+    | customers            | 56      | 1       |
+    | users                | 4       | 1       |
+    | mailbox_folders      | 9       | 1       |
+    | workflows            | 2       | 1       |
+    | conversation_threads | 32      | 1       |
+    | mailbox_fields       | 2       | 1       |
     | mailboxes            | 2       | 1       |
-    | conversation_threads | 22      | 11      |
-    | mailbox_folders      | 9       | 2       |
-    | mailbox_fields       | 5       | 2       |
-    | conversations        | 11      | 1       |
-    | customers            | 52      | 1       |
     +----------------------+---------+---------+
     ```
 ---
 
-Copyright &copy; 2019 Stitch
+Copyright &copy; 2020 Stitch

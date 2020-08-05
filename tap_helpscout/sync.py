@@ -110,8 +110,6 @@ def sync_endpoint(client,
         last_datetime = get_bookmark(state, stream_name, start_date)
         max_bookmark_value = last_datetime
 
-    write_schema(catalog, stream_name)
-
     # pagination: loop thru all pages of data
     page = 1
     total_pages = 1  # initial value, set with first API call
@@ -176,6 +174,7 @@ def sync_endpoint(client,
                     None,
                     child_stream_name)
                 if should_stream:
+                    write_schema(catalog, child_stream_name)
                     for record in transformed_data:
                         parent_id = record.get('id')
                         LOGGER.info('Syncing: {}, parent_id: {}'.format(child_stream_name, parent_id))
@@ -291,7 +290,8 @@ def sync(client, catalog, state, start_date):
                 'sortOrder': 'asc'
             },
             'data_key': 'conversations',
-            'bookmark_field': 'user_updated_at',
+            'bookmark_query_field': 'modifiedSince',
+            'bookmark_field': 'updated_at',
             'bookmark_type': 'datetime',
             'id_field': 'id',
             'children': {
@@ -367,6 +367,7 @@ def sync(client, catalog, state, start_date):
         if should_stream:
             LOGGER.info('START Syncing: {}'.format(stream_name))
             update_currently_syncing(state, stream_name)
+            write_schema(catalog, stream_name)
 
             path = endpoint_config.get('path')
             total_records = sync_endpoint(
