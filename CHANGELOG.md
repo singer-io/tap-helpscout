@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.3
+  * Change `conversations` to use bookmark `modifiedSince` filter param to improve bookmarking and reduce the data volumes queried.
+
 ## 1.0.2
   * Get max `updated_at` for `conversations` even if `None`.
 
