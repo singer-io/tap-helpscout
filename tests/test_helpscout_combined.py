@@ -9,6 +9,8 @@ from tap_tester import menagerie
 import tap_tester.runner as runner
 import tap_tester.connections as connections
 
+from base import BaseHelpscoutTest
+
 
 class HelpscoutCombinedTest(BaseHelpscoutTest):
     """ Test the tap combined """
