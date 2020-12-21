@@ -24,7 +24,7 @@ class HelpscoutCombinedTest(BaseHelpscoutTest):
             if not existing_conns:
                 return payload
             conn_with_creds = connections.fetch_existing_connection_with_creds(existing_conns[0]['id'])
-            payload['credentials']['refresh_token'] = conn_with_creds['credentials']['refresh_token']
+            payload['properties']['refresh_token'] = conn_with_creds['credentials']['refresh_token']
             return payload
 
         conn_id = connections.ensure_connection(self, payload_hook=preserve_refresh_token)

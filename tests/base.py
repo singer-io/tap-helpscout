@@ -62,7 +62,7 @@ class BaseHelpscoutTest(unittest.TestCase):
 
     def get_properties(self):
         """Configuration properties required for the tap."""
-        return {'start_date': os.getenv('TAP_HELPSCOUT_START_DATE', '2018-01-01 00:00:00')}
+        return {'start_date': os.getenv('TAP_HELPSCOUT_START_DATE', '2018-01-01T00:00:00Z')}
 
     def get_credentials(self):
         """Authentication information for the test account"""
