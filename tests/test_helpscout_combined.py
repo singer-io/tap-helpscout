@@ -20,6 +20,8 @@ class HelpscoutCombinedTest(BaseHelpscoutTest):
 
     def test_run(self):
 
+        self.fail('Temporarily failing because of refresh token issue')
+
         def preserve_refresh_token(existing_conns, payload):
             if not existing_conns:
                 return payload
