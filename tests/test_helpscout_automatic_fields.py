@@ -6,27 +6,20 @@ from base import HelpscoutBaseTest
 class AutomaticFieldsTest(HelpscoutBaseTest):
 
     def name(self):
-        return "tap_tester_helpscout_discovery_test"
+        return "tap-helpscout-shared-tests-token-chaining"
 
-    def setUp(self):
-        print("")
+    def test_name(self):
+        print("Automatic Field Test for tap-helpscout")
 
     def test_run(self):
         """
         Verify we can deselect all fields except when inclusion=automatic, which is handled by base.py method
         Verify that only the automatic fields are sent to the target.
         """
-
-        # This method is used get the refresh token from an existing refresh token
-        def preserve_refresh_token(existing_conns, payload):
-            if not existing_conns:
-                return payload
-            conn_with_creds = connections.fetch_existing_connection_with_creds(existing_conns[0]['id'])
-            payload['properties']['refresh_token'] = conn_with_creds['credentials']['refresh_token']
-            return payload
+        self.should_fail_fast()
 
         # instantiate connection
-        conn_id = connections.ensure_connection(self, payload_hook=preserve_refresh_token)
+        conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 
         streams_to_test = self.expected_streams()
 
@@ -34,8 +27,6 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
 
         # run check mode
         found_catalogs = self.run_and_verify_check_mode(conn_id)
-
-        print(found_catalogs)
 
         # table and field selection
         test_catalogs_automatic_fields = [catalog for catalog in found_catalogs
@@ -46,7 +37,8 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
 
         # run initial sync
         record_count_by_stream = self.run_and_verify_sync(conn_id)
-        synced_records = runner.get_records_from_target_output()
+        all_messages = runner.get_records_from_target_output()
+        
         for stream in streams_to_test:
             with self.subTest(stream=stream):
 
@@ -57,8 +49,10 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
                 expected_keys = expected_keys - self.expected_replication_keys().get(stream)
 
                 # collect actual values
-                data = synced_records.get(stream)
-                record_messages_keys = [set(row['data'].keys()) for row in data['messages']]
+                stream_messages = all_messages.get(stream)
+                record_messages_keys = [set(message['data'].keys())
+                                        for message in stream_messages['messages']
+                                        if  message['action'] == 'upsert']
 
 
                 # Verify that you get some records for each stream

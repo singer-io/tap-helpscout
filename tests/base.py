@@ -32,6 +32,9 @@ class HelpscoutBaseTest(unittest.TestCase):
 
     start_date = "2018-01-01T00:00:00Z"
 
+    def should_fail_fast(self):
+        if 'sandbox' in os.getenv('STITCH_API_HOST'):
+            self.fail('Temporarily failing because of refresh token issue')
 
     @staticmethod
     def tap_name():
@@ -66,8 +69,6 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {"updated_at"}
-                #Associated to TDL - 16188
-                #self.REPLICATION_KEYS: {"user_updated_at"}
             },
             "conversation_threads": {
                 self.PRIMARY_KEYS: {"id"},
@@ -126,21 +127,12 @@ class HelpscoutBaseTest(unittest.TestCase):
                for table, properties
                in self.expected_metadata().items()}
 
-    def expected_foreign_keys(self):
-       """
-       return a dictionary with key of table
-       and value as a set of foreign key fields
-       """
-       return {table: properties.get(self.FOREIGN_KEYS, set())
-               for table, properties
-               in self.expected_metadata().items()}
-
     def expected_automatic_fields(self):
 
        auto_fields = {}
        for k,v in self.expected_metadata().items():
 
-          auto_fields[k] = v.get(self.PRIMARY_KEYS, set()) | v.get(self.REPLICATION_KEYS, set()) | v.get(self.FOREIGN_KEYS, set())
+          auto_fields[k] = v.get(self.PRIMARY_KEYS, set()) | v.get(self.REPLICATION_KEYS, set())
        return auto_fields
 
     def expected_replication_method(self):
@@ -153,6 +145,17 @@ class HelpscoutBaseTest(unittest.TestCase):
         missing_envs = [x for x in self.required_environment_variables() if os.getenv(x) is None]
         if missing_envs:
             raise Exception("Missing environment variables, please set {}." .format(missing_envs))
+
+    
+    @staticmethod
+    def preserve_refresh_token(existing_conns, payload):
+        """This method is used get the refresh token from an existing refresh token"""
+        if not existing_conns:
+            return payload
+        conn_with_creds = connections.fetch_existing_connection_with_creds(existing_conns[0]['id'])
+        payload['properties']['refresh_token'] = conn_with_creds['credentials']['refresh_token']
+        return payload
+
 
     #########################
     #   Helper Methods      #

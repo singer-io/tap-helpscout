@@ -11,7 +11,10 @@ class DiscoveryTest(HelpscoutBaseTest):
 
     @staticmethod
     def name():
-        return "tap_tester_helpscout_discovery_test"
+        return "tap-helpscout-shared-tests-token-chaining"
+
+    def test_name(self):
+        print("Discovery Test for tap-helpscout")
 
     def test_run(self):
         """
@@ -30,17 +33,9 @@ class DiscoveryTest(HelpscoutBaseTest):
           are given the inclusion of automatic.
         • verify that all other fields have inclusion of available metadata.
         """
+        self.should_fail_fast()
 
-        # This method is used get the refresh token from an existing refresh token
-        def preserve_refresh_token(existing_conns, payload):
-            if not existing_conns:
-                return payload
-            conn_with_creds = connections.fetch_existing_connection_with_creds(existing_conns[0]['id'])
-            payload['properties']['refresh_token'] = conn_with_creds['credentials']['refresh_token']
-            return payload
-
-        conn_id = connections.ensure_connection(self, payload_hook=preserve_refresh_token)
-
+        conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 
         streams_to_test = self.expected_streams()
 
