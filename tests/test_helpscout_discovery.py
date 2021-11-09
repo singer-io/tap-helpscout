@@ -11,7 +11,7 @@ class DiscoveryTest(HelpscoutBaseTest):
 
     @staticmethod
     def name():
-        return "tap-helpscout-shared-tests-token-chaining"
+        return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
         print("Discovery Test for tap-helpscout")
@@ -33,6 +33,8 @@ class DiscoveryTest(HelpscoutBaseTest):
           are given the inclusion of automatic.
         • verify that all other fields have inclusion of available metadata.
         """
+
+
         self.should_fail_fast()
 
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
@@ -68,6 +70,9 @@ class DiscoveryTest(HelpscoutBaseTest):
                 expected_automatic_fields = expected_primary_keys | expected_replication_keys
                 expected_replication_method = self.expected_replication_method()[stream]
 
+                # workaround for TDL-16245 , remove after bug fix
+                expected_automatic_fields = expected_automatic_fields - self.expected_replication_keys().get(stream)
+
                 # collecting actual values
                 schema_and_metadata = menagerie.get_annotated_schema(conn_id, catalog['stream_id'])
                 metadata = schema_and_metadata["metadata"]
@@ -101,15 +106,26 @@ class DiscoveryTest(HelpscoutBaseTest):
                 # verify primary key(s)
                 self.assertSetEqual(expected_primary_keys, actual_primary_keys, msg = f"expected primary keys is {expected_primary_keys} but actual primary keys is {actual_primary_keys}")
 
-                # TDL - 16188 : BUG : The tap renames the replication key for stream - conversations from user_updated_at to updated_at, which needs to be corrected
-
                 # verify replication key(s)
                 self.assertEqual(expected_replication_keys, actual_replication_keys, msg = f"expected replication key is {expected_replication_keys} but actual replication key is {actual_replication_keys}")
 
                 # verify replication key is present for any stream with replication method = INCREMENTAL
                 if actual_replication_method == 'INCREMENTAL':
                     self.assertEqual(expected_replication_keys, actual_replication_keys)
+                else:
+                    self.assertEqual(actual_replication_keys,set())
+
+                # verify the stream is given the inclusion of available
+                self.assertEqual(catalog['metadata']['inclusion'],'available', msg=f"{stream} cannot be selected")
 
                 # verify the primary, replication keys are given the inclusions of automatic
-                self.assertEqual(catalog['metadata']['inclusion'],'available')
-                print(stream + ' has the automatic inclusion')
+                self.assertSetEqual(expected_automatic_fields ,actual_automatic_fields)
+
+                # verify all other fields are given inclusion of available
+                self.assertTrue(
+                    all({item.get("metadata").get("inclusion") == "available"
+                         for item in metadata
+                         if item.get("breadcrumb", []) != []
+                         and item.get("breadcrumb", ["properties", None])[1]
+                         not in actual_automatic_fields}),
+                    msg="Not all non key properties are set to available in metadata")

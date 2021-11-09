@@ -6,7 +6,7 @@ from base import HelpscoutBaseTest
 class AutomaticFieldsTest(HelpscoutBaseTest):
 
     def name(self):
-        return "tap-helpscout-shared-tests-token-chaining"
+        return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
         print("Automatic Field Test for tap-helpscout")
@@ -38,7 +38,7 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
         # run initial sync
         record_count_by_stream = self.run_and_verify_sync(conn_id)
         all_messages = runner.get_records_from_target_output()
-        
+
         for stream in streams_to_test:
             with self.subTest(stream=stream):
 

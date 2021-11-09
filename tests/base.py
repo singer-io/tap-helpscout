@@ -103,7 +103,7 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {"modified_at"}
             }
-              }
+        }
 
     def expected_streams(self):
        """A set of expected stream names"""
