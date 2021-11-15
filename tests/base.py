@@ -27,6 +27,7 @@ class HelpscoutBaseTest(unittest.TestCase):
     INCREMENTAL = "INCREMENTAL"
     FULL_TABLE = "FULL_TABLE"
     START_DATE_FORMAT = "%Y-%m-%dT00:00:00Z"
+    EXPECTED_PAGE_SIZE = "expected-page-size"
     BOOKMARK_COMPARISON_FORMAT = "%Y-%m-%dT00:00:00+00:00"
 
 
@@ -47,9 +48,14 @@ class HelpscoutBaseTest(unittest.TestCase):
         return "platform.helpscout"
 
 
-    def get_properties(self):
+    def get_properties(self, original=True):
         """Configuration properties required for the tap."""
-        return {'start_date': os.getenv('TAP_HELPSCOUT_START_DATE', '2018-01-01T00:00:00Z')}
+        return_value = {'start_date': os.getenv('TAP_HELPSCOUT_START_DATE', '2018-01-01T00:00:00Z')}
+
+        if not original:
+            return_value['start_date'] = self.start_date
+
+        return return_value
 
     def get_credentials(self):
         """Authentication information for the test account"""
@@ -68,40 +74,48 @@ class HelpscoutBaseTest(unittest.TestCase):
             "conversations": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {"updated_at"}
+                self.REPLICATION_KEYS: {"updated_at"},
+                self.EXPECTED_PAGE_SIZE: 25
             },
             "conversation_threads": {
                 self.PRIMARY_KEYS: {"id"},
-                self.REPLICATION_METHOD: self.FULL_TABLE
+                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.EXPECTED_PAGE_SIZE: 50
             },
             "customers": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {"updated_at"}
+                self.REPLICATION_KEYS: {"updated_at"},
+                self.EXPECTED_PAGE_SIZE: 50
             },
             "mailboxes": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {"updated_at"}
+                self.REPLICATION_KEYS: {"updated_at"},
+                self.EXPECTED_PAGE_SIZE: 50
             },
             "mailbox_fields": {
                 self.PRIMARY_KEYS: {"id"},
-                self.REPLICATION_METHOD: self.FULL_TABLE
+                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.EXPECTED_PAGE_SIZE: 50
             },
             "mailbox_folders": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {"updated_at"}
+                self.REPLICATION_KEYS: {"updated_at"},
+                self.EXPECTED_PAGE_SIZE: 50
             },
             "users": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {"updated_at"}
+                self.REPLICATION_KEYS: {"updated_at"},
+                self.EXPECTED_PAGE_SIZE: 50
             },
             "workflows": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {"modified_at"}
+                self.REPLICATION_KEYS: {"modified_at"},
+                self.EXPECTED_PAGE_SIZE: 50
             }
         }
 
@@ -141,12 +155,55 @@ class HelpscoutBaseTest(unittest.TestCase):
                for table, properties
                in self.expected_metadata().items()}
 
+    def expected_page_limits(self):
+       return {table: properties.get(self.EXPECTED_PAGE_SIZE, set())
+               for table, properties
+               in self.expected_metadata().items()}
+
     def setUp(self):
         missing_envs = [x for x in self.required_environment_variables() if os.getenv(x) is None]
         if missing_envs:
             raise Exception("Missing environment variables, please set {}." .format(missing_envs))
 
-    
+    @staticmethod
+    def parse_date(date_value):
+        """
+        Pass in string-formatted-datetime, parse the value, and return it as an unformatted datetime object.
+        """
+        date_formats = {
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%f+00:00",
+            "%Y-%m-%dT%H:%M:%S+00:00",
+            "%Y-%m-%d"
+        }
+        for date_format in date_formats:
+            try:
+                date_stripped = dt.strptime(date_value, date_format)
+                return date_stripped
+            except ValueError:
+                continue
+
+        raise NotImplementedError("Tests do not account for dates of this format: {}".format(date_value))
+
+
+    def timedelta_formatted(self, dtime, days=0):
+        try:
+            date_stripped = dt.strptime(dtime, self.START_DATE_FORMAT)
+            return_date = date_stripped + timedelta(days=days)
+
+            return dt.strftime(return_date, self.START_DATE_FORMAT)
+
+        except ValueError:
+            try:
+                date_stripped = dt.strptime(dtime, self.BOOKMARK_COMPARISON_FORMAT)
+                return_date = date_stripped + timedelta(days=days)
+
+                return dt.strftime(return_date, self.BOOKMARK_COMPARISON_FORMAT)
+
+            except ValueError:
+                return Exception("Datetime object is not of the format: {}".format(self.START_DATE_FORMAT))
+
     @staticmethod
     def preserve_refresh_token(existing_conns, payload):
         """This method is used get the refresh token from an existing refresh token"""
