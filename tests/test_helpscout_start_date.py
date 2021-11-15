@@ -23,10 +23,8 @@ class StartDateTest(HelpscoutBaseTest):
 
         self.start_date_1 = self.get_properties()
 
-        # setting current timestamp - 1 , to get all the data which was generated today
-        # log in to helpscout and send out emails to customers/ add customers
 
-        self.start_date_2 = datetime.datetime.utcnow()
+        self.start_date_2 = '2021-11-01T00:00:00Z'
         self.start_date_2 = datetime.datetime.strftime(self.start_date_2,"%Y-%m-%dT00:00:00Z")
         self.start_date_2 = self.timedelta_formatted(self.start_date_2, days = -2)
 
@@ -87,7 +85,7 @@ class StartDateTest(HelpscoutBaseTest):
                 expected_start_date_1 = self.start_date_1
                 expected_start_date_2 = self.start_date_2
 
-
+                # All the streams obey the start date
                 # collect information for assertions from sync 1 and sync 2 based on expected values
                 record_count_sync_1 = record_count_by_stream_1.get(stream, 0)
                 record_count_sync_2 = record_count_by_stream_2.get(stream, 0)
