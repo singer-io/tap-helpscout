@@ -19,8 +19,6 @@ class StartDateTest(HelpscoutBaseTest):
 
     def test_run(self):
 
-        self.should_fail_fast()
-
         self.start_date_1 = self.get_properties()
         self.start_date_2 = '2021-11-01T00:00:00Z'
         self.start_date_2 = self.timedelta_formatted(self.start_date_2, days = -2)

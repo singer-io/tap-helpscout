@@ -34,9 +34,6 @@ class DiscoveryTest(HelpscoutBaseTest):
         • verify that all other fields have inclusion of available metadata.
         """
 
-
-        self.should_fail_fast()
-
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 
         streams_to_test = self.expected_streams()
