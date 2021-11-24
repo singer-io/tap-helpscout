@@ -16,8 +16,6 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
         Verify we can deselect all fields except when inclusion=automatic, which is handled by base.py method
         Verify that only the automatic fields are sent to the target.
         """
-        self.should_fail_fast()
-
         # instantiate connection
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 

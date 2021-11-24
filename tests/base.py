@@ -33,10 +33,6 @@ class HelpscoutBaseTest(unittest.TestCase):
 
     start_date = "2018-01-01T00:00:00Z"
 
-    def should_fail_fast(self):
-        if 'sandbox' in os.getenv('STITCH_API_HOST'):
-            self.fail('Temporarily failing because of refresh token issue')
-
     @staticmethod
     def tap_name():
         """The name of the tap"""
