@@ -1,6 +1,7 @@
-# TODO setup default tap-tester slack orb
-# TODO create a card to add pylint
-version: 2
+version: 2.1
+orbs:
+  slack: circleci/slack@3.4.2
+
 jobs:
   build:
     docker:
@@ -10,11 +11,19 @@ jobs:
       - run:
           name: 'Setup virtual env'
           command: |
+            aws s3 cp s3://com-stitchdata-dev-deployment-assets/environments/tap-tester/tap_tester_sandbox dev_env.sh
             python3 -m venv /usr/local/share/virtualenvs/tap-helpscout
             source /usr/local/share/virtualenvs/tap-helpscout/bin/activate
             pip install -U 'pip<19.2' 'setuptools<51.0.0'
             pip install .[dev]
-      - add_ssh_keys
+      # TODO [tap-helpscout] Add pylint step to regression build
+      #      https://jira.talendforge.org/browse/TDL-16519
+      # - run:
+      #     name: 'pylint'
+      #     command: |
+      #       source dev_env.sh
+      #       source /usr/local/share/virtualenvs/tap-helpscout/bin/activate
+      #       pylint tap_helpscout -d "$PYLINT_DISABLE_LIST"
       - run:
           name: 'JSON Validator'
           command: |
@@ -23,17 +32,27 @@ jobs:
       - run:
           name: 'Integration Tests'
           command: |
-            aws s3 cp s3://com-stitchdata-dev-deployment-assets/environments/tap-tester/tap_tester_sandbox dev_env.sh
             source dev_env.sh
             source /usr/local/share/virtualenvs/tap-tester/bin/activate
             run-test --tap=tap-helpscout tests
+      - slack/status:
+          channel: 'stitch-tap-tester-tests'
+          mentions: "${CIRCLE_USERNAME}"
+          fail_only: true
+          only_for_branches: master
+          failure_message: |
+            :red_circle: ${CIRCLE_JOB} failed!
+
 workflows:
   version: 2
-  commit:
+  commit: &commit_jobs
     jobs:
       - build:
-          context: circleci-user
+          context:
+            - circleci-user
+            - tap-tester-user
   build_daily:
+    <<: *commit_jobs
     triggers:
       - schedule:
           cron: "0 0 * * *"
@@ -41,6 +60,3 @@ workflows:
             branches:
               only:
                 - master
-    jobs:
-      - build:
-          context: circleci-user

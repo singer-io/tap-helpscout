@@ -13,6 +13,12 @@ setup(name='tap-helpscout',
           'requests==2.23.0',
           'singer-python==5.9.0'
       ],
+      extras_require={
+          'dev': [
+              'pylint==2.7.4',
+              'ipdb',
+          ]
+      },
       entry_points='''
           [console_scripts]
           tap-helpscout=tap_helpscout:main
