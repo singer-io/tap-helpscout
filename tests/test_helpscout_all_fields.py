@@ -8,7 +8,7 @@ class AllFieldsTest(HelpscoutBaseTest):
         return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
-        print("Pagination Test for tap-helpscout")
+        print("All Fields Test for tap-helpscout")
 
     def test_run(self):
 
