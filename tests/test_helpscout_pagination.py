@@ -13,8 +13,6 @@ class PaginationTest(HelpscoutBaseTest):
 
     def test_run(self):
 
-        self.should_fail_fast()
-
         # instantiate connection
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 
