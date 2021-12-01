@@ -63,6 +63,7 @@ class DiscoveryTest(HelpscoutBaseTest):
 
                 # collecting expected values
                 expected_primary_keys = self.expected_primary_keys()[stream]
+                expected_foreign_keys = self.expected_foreign_keys()[stream]
                 expected_replication_keys = self.expected_replication_keys()[stream]
                 expected_automatic_fields = expected_primary_keys | expected_replication_keys
                 expected_replication_method = self.expected_replication_method()[stream]
@@ -78,6 +79,10 @@ class DiscoveryTest(HelpscoutBaseTest):
                     stream_properties[0].get(
                         "metadata", {self.PRIMARY_KEYS: []}).get(self.PRIMARY_KEYS, [])
                 )
+                actual_foreign_keys = set(
+                    stream_properties[0].get(
+                        "metadata", {self.FOREIGN_KEYS: []}).get(self.FOREIGN_KEYS, [])
+                )
                 actual_replication_keys = set(
                     stream_properties[0].get(
                         "metadata", {self.REPLICATION_KEYS: []}).get(self.REPLICATION_KEYS, [])
@@ -88,8 +93,6 @@ class DiscoveryTest(HelpscoutBaseTest):
                     item.get("breadcrumb", ["properties", None])[1] for item in metadata
                     if item.get("metadata").get("inclusion") == "automatic"
                 )
-
-
 
                 ##########################################################################
                 ### metadata assertions
@@ -126,3 +129,7 @@ class DiscoveryTest(HelpscoutBaseTest):
                          and item.get("breadcrumb", ["properties", None])[1]
                          not in actual_automatic_fields}),
                     msg="Not all non key properties are set to available in metadata")
+
+                # For child streams only - BUG : TDL-16580 : metadata does not have foreign_keys for conversation_threads
+                # verify the foregin key on a child stream is specified
+                #self.assertEqual(expected_foreign_keys, actual_foreign_keys)

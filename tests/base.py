@@ -7,7 +7,8 @@ import os
 from datetime import timedelta
 from datetime import datetime as dt
 from tap_tester import connections, menagerie, runner
-
+import dateutil.parser
+import pytz
 
 class HelpscoutBaseTest(unittest.TestCase):
 
@@ -27,9 +28,9 @@ class HelpscoutBaseTest(unittest.TestCase):
     INCREMENTAL = "INCREMENTAL"
     FULL_TABLE = "FULL_TABLE"
     START_DATE_FORMAT = "%Y-%m-%dT00:00:00Z"
-    EXPECTED_PAGE_SIZE = "expected-page-size"
     BOOKMARK_COMPARISON_FORMAT = "%Y-%m-%dT00:00:00+00:00"
-
+    EXPECTED_PAGE_SIZE = "expected-page-size"
+    EXPECTED_PARENT_STREAM = 'expected-parent-stream'
 
     start_date = "2018-01-01T00:00:00Z"
 
@@ -42,7 +43,6 @@ class HelpscoutBaseTest(unittest.TestCase):
     def get_type():
         """the expected url route ending"""
         return "platform.helpscout"
-
 
     def get_properties(self, original=True):
         """Configuration properties required for the tap."""
@@ -76,7 +76,9 @@ class HelpscoutBaseTest(unittest.TestCase):
             "conversation_threads": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
-                self.EXPECTED_PAGE_SIZE: 50
+                self.EXPECTED_PAGE_SIZE: 50,
+                self.FOREIGN_KEYS: {"id"},
+                self.EXPECTED_PARENT_STREAM: "conversations"
             },
             "customers": {
                 self.PRIMARY_KEYS: {"id"},
@@ -128,6 +130,15 @@ class HelpscoutBaseTest(unittest.TestCase):
                for table, properties
                in self.expected_metadata().items()}
 
+    def expected_foreign_keys(self):
+       """
+       return a dictionary with key of table name 
+       and value as a set of foregin key fields
+       """
+       return {table: properties.get(self.FOREIGN_KEYS, set())
+               for table, properties
+               in self.expected_metadata().items()}
+
     def expected_replication_keys(self):
        """
        return a dictionary with key of table name
@@ -142,7 +153,7 @@ class HelpscoutBaseTest(unittest.TestCase):
        auto_fields = {}
        for k,v in self.expected_metadata().items():
 
-          auto_fields[k] = v.get(self.PRIMARY_KEYS, set()) | v.get(self.REPLICATION_KEYS, set())
+          auto_fields[k] = v.get(self.PRIMARY_KEYS, set()) | v.get(self.REPLICATION_KEYS, set()) | v.get(self.FOREIGN_KEYS, set())
        return auto_fields
 
     def expected_replication_method(self):
@@ -182,6 +193,16 @@ class HelpscoutBaseTest(unittest.TestCase):
 
         raise NotImplementedError("Tests do not account for dates of this format: {}".format(date_value))
 
+    def convert_state_to_utc(self, date_str):
+        """
+        Convert a saved bookmark value of the form '2020-08-25T13:17:36-07:00' to
+        a string formatted utc datetime,
+        in order to compare aginast json formatted datetime values
+        """
+        date_object = dateutil.parser.parse(date_str)
+        date_object_utc = date_object.astimezone(tz=pytz.UTC)
+        return dt.strftime(date_object_utc, "%Y-%m-%dT%H:%M:%SZ")
+
 
     def timedelta_formatted(self, dtime, days=0):
         try:
@@ -208,6 +229,26 @@ class HelpscoutBaseTest(unittest.TestCase):
         conn_with_creds = connections.fetch_existing_connection_with_creds(existing_conns[0]['id'])
         payload['properties']['refresh_token'] = conn_with_creds['credentials']['refresh_token']
         return payload
+    
+    def calculated_states_by_stream(self, current_state):
+        timedelta_by_stream = {stream: [5,0,0]  # {stream_name: [days, hours, minutes], ...}
+                               for stream in self.expected_streams()}
+
+        stream_to_calculated_state = {stream: "" for stream in current_state['bookmarks'].keys()}
+        for stream, state in current_state['bookmarks'].items():
+
+            state_as_datetime = dateutil.parser.parse(state)
+
+            days, hours, minutes = timedelta_by_stream[stream]
+            calculated_state_as_datetime = state_as_datetime - timedelta(days=days, hours=hours, minutes=minutes)
+
+            state_format = "%Y-%m-%dT00:00:00Z"
+            calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
+
+            stream_to_calculated_state[stream] = calculated_state_formatted
+
+        return stream_to_calculated_state
+
 
 
     #########################
@@ -338,3 +379,8 @@ class HelpscoutBaseTest(unittest.TestCase):
 
             connections.select_catalog_and_fields_via_metadata(
                 conn_id, catalog, schema, [], non_selected_properties)
+
+    def expected_child_streams(self):
+        return {table: properties.get(self.EXPECTED_PARENT_STREAM, set())
+                for table, properties
+                in self.expected_metadata().items()}
