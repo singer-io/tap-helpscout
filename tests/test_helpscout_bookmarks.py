@@ -17,8 +17,7 @@ class BookmarksTest(HelpscoutBaseTest):
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 
         streams_to_test = self.expected_streams()
-        # -{"workflows","users","mailbox_fields","mailbox_folders","customers","mailboxes"}
-
+ 
         expected_replication_keys = self.expected_replication_keys()
         expected_replication_methods = self.expected_replication_method()
 

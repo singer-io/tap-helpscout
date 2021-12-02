@@ -77,7 +77,7 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
                 self.EXPECTED_PAGE_SIZE: 50,
-                self.FOREIGN_KEYS: {"id"},
+                self.FOREIGN_KEYS: {"conversation_id"},
                 self.EXPECTED_PARENT_STREAM: "conversations"
             },
             "customers": {
@@ -132,7 +132,7 @@ class HelpscoutBaseTest(unittest.TestCase):
 
     def expected_foreign_keys(self):
        """
-       return a dictionary with key of table name 
+       return a dictionary with key of table name
        and value as a set of foregin key fields
        """
        return {table: properties.get(self.FOREIGN_KEYS, set())
@@ -229,7 +229,7 @@ class HelpscoutBaseTest(unittest.TestCase):
         conn_with_creds = connections.fetch_existing_connection_with_creds(existing_conns[0]['id'])
         payload['properties']['refresh_token'] = conn_with_creds['credentials']['refresh_token']
         return payload
-    
+
     def calculated_states_by_stream(self, current_state):
         timedelta_by_stream = {stream: [5,0,0]  # {stream_name: [days, hours, minutes], ...}
                                for stream in self.expected_streams()}

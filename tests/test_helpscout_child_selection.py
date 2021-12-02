@@ -12,6 +12,8 @@ class BookmarksTest(HelpscoutBaseTest):
     def test_name(self):
         print("Invalid Child Stream Selection Test for tap-helpscout")
 
+
+    #BUG : TDL-16580: Child stream not getting the foreign key information from metadata
     @unittest.skip("BUG")
     def test_run(self):
 
