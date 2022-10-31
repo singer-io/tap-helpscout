@@ -47,7 +47,6 @@ class HelpScoutClient:
                           max_tries=5,
                           factor=2)
     def get_access_token(self):
-        print("inside get_access_token")
         # if tap is being executed in dev_mode then disable tap from creating new refresh and access tokens
         if self.__dev_mode:
             if self.__access_token:
