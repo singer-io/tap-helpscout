@@ -5,11 +5,14 @@ import requests
 from singer import metrics
 from singer import utils
 
+
 class Server5xxError(Exception):
     pass
 
+
 class Server429Error(Exception):
     pass
+
 
 class HelpScoutClient:
 
@@ -18,17 +21,17 @@ class HelpScoutClient:
 
     def __init__(self,
                  config_path,
-                 client_id,
-                 client_secret,
-                 refresh_token,
-                 user_agent):
+                 config,
+                 dev_mode=False):
         self.__config_path = config_path
-        self.__client_id = client_id
-        self.__client_secret = client_secret
-        self.__refresh_token = refresh_token
-        self.__user_agent = user_agent
-        self.__access_token = None
-        self.__expires = None
+        self.__client_id = config['client_id']
+        self.__client_secret = config['client_secret']
+        self.__refresh_token = config['refresh_token']
+        self.__user_agent = config['user_agent']
+        self.__access_token = config.get('access_token')
+        self.__dev_mode = dev_mode
+        # this is to make sure a new access token gets generated on every extraction
+        self.__expires = datetime.utcnow() - timedelta(seconds=10)
         self.__session = requests.Session()
         self.__base_url = None
 
@@ -44,7 +47,15 @@ class HelpScoutClient:
                           max_tries=5,
                           factor=2)
     def get_access_token(self):
-        if self.__access_token is not None and self.__expires > datetime.utcnow():
+        print("inside get_access_token")
+        # if tap is being executed in dev_mode then disable tap from creating new refresh and access tokens
+        if self.__dev_mode:
+            if self.__access_token:
+                return
+
+            raise Exception("Access token is missing, unable to authenticate in dev mode")
+
+        if self.__access_token and self.__expires > datetime.utcnow():
             return
 
         headers = {}
@@ -80,13 +91,13 @@ class HelpScoutClient:
         ## refresh_token rotates on every reauth
         with open(self.__config_path) as file:
             config = json.load(file)
-        config['refresh_token'] = data['refresh_token']
+        config['refresh_token'] = self.__refresh_token
+        config['access_token'] = self.__access_token
         with open(self.__config_path, 'w') as file:
             json.dump(config, file, indent=2)
 
-        expires_seconds = data['expires_in'] - 60 # pad by 60 seconds
+        expires_seconds = data['expires_in'] - 60  # pad by 60 seconds
         self.__expires = datetime.utcnow() + timedelta(seconds=expires_seconds)
-
 
     @backoff.on_exception(backoff.expo,
                           (Server5xxError, ConnectionError, Server429Error),
@@ -126,8 +137,8 @@ class HelpScoutClient:
         if response.status_code >= 500:
             raise Server5xxError()
 
-        #Use retry functionality in backoff to wait and retry if
-        #response code equals 429 because rate limit has been exceeded
+        # Use retry functionality in backoff to wait and retry if
+        # response code equals 429 because rate limit has been exceeded
         if response.status_code == 429:
             raise Server429Error()
 
