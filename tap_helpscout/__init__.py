@@ -29,7 +29,7 @@ def main():
 
     parsed_args = singer.utils.parse_args(REQUIRED_CONFIG_KEYS)
     if parsed_args.dev:
-        LOGGER.info("Executing tap in dev mode")
+        LOGGER.warning("Executing tap in dev mode")
 
     with HelpScoutClient(parsed_args.config_path,
                          parsed_args.config,
