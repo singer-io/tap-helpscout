@@ -17,7 +17,9 @@ class MockResponse:
 
 def get_mocked_response():
     return MockResponse({"access_token": "new_access_token",
-                         "refresh_token": "new_refresh_token", "expires_in": 27800}, status_code=200)
+                         "refresh_token": "new_refresh_token",
+                         "expires_in": 27800},
+                        status_code=200)
 
 
 class TestDevModeImplementation(unittest.TestCase):
@@ -75,6 +77,7 @@ class TestDevModeImplementation(unittest.TestCase):
             new_config_content = json.load(config_file)
         self.assertEqual(new_config_content['access_token'], "new_access_token")
         self.assertEqual(new_config_content['refresh_token'], "new_refresh_token")
+
 
 
 
