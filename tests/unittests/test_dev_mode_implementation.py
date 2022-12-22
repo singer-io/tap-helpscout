@@ -77,8 +77,3 @@ class TestDevModeImplementation(unittest.TestCase):
             new_config_content = json.load(config_file)
         self.assertEqual(new_config_content['access_token'], "new_access_token")
         self.assertEqual(new_config_content['refresh_token'], "new_refresh_token")
-
-
-
-
-
