@@ -1,4 +1,6 @@
 # Changelog
+## 1.0.4
+  * Adds support for dev mode
 
 ## 1.0.3
   * Change `conversations` to use bookmark `modifiedSince` filter param to improve bookmarking and reduce the data volumes queried.
