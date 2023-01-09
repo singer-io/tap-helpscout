@@ -1,5 +1,5 @@
 # Changelog
-## 1.0.4
+## 1.1.0
   * Adds support for dev mode [#30](https://github.com/singer-io/tap-helpscout/pull/30)
 
 ## 1.0.3
