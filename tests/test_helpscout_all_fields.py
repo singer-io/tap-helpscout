@@ -1,4 +1,4 @@
-from tap_tester import menagerie, connections, runner
+from tap_tester import menagerie, connections, runner, LOGGER
 
 from base import HelpscoutBaseTest
 
@@ -8,9 +8,14 @@ class AllFieldsTest(HelpscoutBaseTest):
         return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
-        print("All Fields Test for tap-helpscout")
+        LOGGER.info("All Fields Test for tap-helpscout")
 
     def test_run(self):
+        """
+            • Verify no unexpected streams were replicated
+            • Verify that more than just the automatic fields are replicated for each stream. 
+            • verify all fields for each stream are replicated
+        """
 
         # instantiate connection
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
@@ -66,5 +71,8 @@ class AllFieldsTest(HelpscoutBaseTest):
 
                 # verify all fields for each stream were replicated
                 self.assertGreater(len(expected_all_fields), len(expected_automatic_fields))
-                self.assertTrue(expected_automatic_fields.issubset(expected_all_fields), msg=f'automatic fields not part of all fields')
                 self.assertSetEqual(expected_all_fields, actual_all_fields)
+
+                # Verify that more than just the automatic fields are replicated for each stream
+                self.assertTrue(expected_automatic_fields.issubset(expected_all_fields),
+                                msg=f'automatic fields not part of all fields')

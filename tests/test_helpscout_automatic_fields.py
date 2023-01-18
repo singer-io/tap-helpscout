@@ -1,5 +1,6 @@
-from tap_tester import menagerie,connections,runner
-import re
+import json
+
+from tap_tester import connections, runner, LOGGER
 
 from base import HelpscoutBaseTest
 
@@ -9,19 +10,18 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
         return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
-        print("Automatic Field Test for tap-helpscout")
+        LOGGER.info("Automatic Field Test for tap-helpscout")
 
     def test_run(self):
         """
-        Verify we can deselect all fields except when inclusion=automatic, which is handled by base.py method
+        Verify we can deselect all fields except when inclusion=automatic, which is handled by base.py methods
         Verify that only the automatic fields are sent to the target.
+        Verify that all replicated records have unique primary key values.
         """
         # instantiate connection
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 
         streams_to_test = self.expected_streams()
-
-        print(streams_to_test)
 
         # run check mode
         found_catalogs = self.run_and_verify_check_mode(conn_id)
@@ -41,6 +41,7 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
             with self.subTest(stream=stream):
 
                 # expected values
+                expected_primary_keys = self.expected_primary_keys()
                 expected_keys = self.expected_automatic_fields().get(stream)
 
                 # workaround for TDL-16245 , remove after bug fix
@@ -65,3 +66,22 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
                 if stream not in ('conversation_threads'):
                     for actual_keys in record_messages_keys:
                         self.assertSetEqual(expected_keys, actual_keys)
+
+                    # Get records
+                    records = [message.get("data") for message in stream_messages.get('messages', [])
+                               if message.get('action') == 'upsert']
+
+                    # Remove duplicate records
+                    records_pks_list = [tuple(message.get(pk) for pk in expected_primary_keys)
+                                        for message in [json.loads(t) for t in {json.dumps(d) for d in records}]]
+
+                    # Remove duplicate primary keys
+                    records_pks_set = set(records_pks_list)
+
+                    # Verify there are no duplicate records
+                    self.assertCountEqual(records, records_pks_set,
+                                          msg=f"{stream} contains duplicate records")
+
+                    # Verify defined primary key is unique
+                    self.assertCountEqual(records_pks_set, records_pks_list,
+                                          msg=f"{expected_primary_keys} are not unique primary keys for {stream} stream.")

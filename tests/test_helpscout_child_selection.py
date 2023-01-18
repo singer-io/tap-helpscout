@@ -1,5 +1,5 @@
 import unittest
-from tap_tester import menagerie, connections, runner
+from tap_tester import menagerie, connections, runner, LOGGER
 
 from base import HelpscoutBaseTest
 
@@ -10,11 +10,10 @@ class BookmarksTest(HelpscoutBaseTest):
         return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
-        print("Invalid Child Stream Selection Test for tap-helpscout")
-
+        LOGGER.info("Invalid Child Stream Selection Test for tap-helpscout")
 
     #BUG : TDL-16580: Child stream not getting the foreign key information from metadata
-    @unittest.skip("BUG")
+    @unittest.skip("[BUG]TDL-16580: Child stream not getting the foreign key information from metadata")
     def test_run(self):
 
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)

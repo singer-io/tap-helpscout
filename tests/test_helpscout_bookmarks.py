@@ -1,4 +1,4 @@
-from tap_tester import menagerie, connections, runner
+from tap_tester import menagerie, connections, runner, LOGGER
 
 from base import HelpscoutBaseTest
 
@@ -9,10 +9,17 @@ class BookmarksTest(HelpscoutBaseTest):
         return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
-        print("Bookmarks Test for tap-helpscout")
+        LOGGER.info("Bookmarks Test for tap-helpscout")
 
     def test_run(self):
-
+        """
+        - Verify for each incremental stream you can do a sync which records bookmarks
+          and that the format matches expectations.
+        - Verify that a bookmark doesn't exist for full table streams.
+        - Verify the bookmark is the max value sent to the target for the a given replication key.
+        - Verify 2nd sync respects the bookmark. All data of the 2nd sync is >= the bookmark 
+          from the first sync. The number of records in the 2nd sync is less then the first
+        """
         # instantiate connection
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 
@@ -102,14 +109,17 @@ class BookmarksTest(HelpscoutBaseTest):
                     for record in first_sync_messages:
                         replication_key_value = record.get(replication_key)
                         # verify 1st sync bookmark value is the max replication key value for a given stream
-                        self.assertLessEqual(replication_key_value, first_bookmark_value_utc, msg="First sync bookmark was set incorrectly, a re                                             cord with a greater replication key value was synced")
+                        self.assertLessEqual(replication_key_value, first_bookmark_value_utc,
+                                             msg="First sync bookmark was set incorrectly, a record with a greater replication key value was synced")
 
                     for record in second_sync_messages:
                         replication_key_value = record.get(replication_key)
                         # verify the 2nd sync replication key value is greater or equal to the 1st sync bookmarks
-                        self.assertGreaterEqual(replication_key_value, simulated_bookmark, msg="Second sync records do not respect the previous                                                  bookmark")
+                        self.assertGreaterEqual(replication_key_value, simulated_bookmark,
+                                                msg="Second sync records do not respect the previous bookmark")
                         # verify the 2nd sync bookmark value is the max replication key value for a given stream
-                        self.assertLessEqual(replication_key_value, second_bookmark_value_utc, msg="Second sync bookmark was set incorrectly, a                         record with a greater replication key value was synced")
+                        self.assertLessEqual(replication_key_value, second_bookmark_value_utc,
+                                             msg="Second sync bookmark was set incorrectly, a record with a greater replication key value was synced")
 
                     # verify that we get less data in the 2nd sync
                     self.assertLess(second_sync_count, first_sync_count,
