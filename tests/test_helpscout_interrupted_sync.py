@@ -40,7 +40,7 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
         self.start_date = self.get_properties()["start_date"]
         start_date_timestamp = self.dt_to_ts(self.start_date)
 
-        conn_id = connections.ensure_connection(self)
+        conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
         expected_streams = self.expected_streams()
 
         # Run check mode
