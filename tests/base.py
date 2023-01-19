@@ -30,7 +30,6 @@ class HelpscoutBaseTest(unittest.TestCase):
     FULL_TABLE = "FULL_TABLE"
     START_DATE_FORMAT = "%Y-%m-%dT00:00:00Z"
     BOOKMARK_COMPARISON_FORMAT = "%Y-%m-%dT00:00:00+00:00"
-    REPLICATION_DATE_FOMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     EXPECTED_PAGE_SIZE = "expected-page-size"
     EXPECTED_PARENT_STREAM = 'expected-parent-stream'
 
@@ -387,9 +386,19 @@ class HelpscoutBaseTest(unittest.TestCase):
                 for table, properties
                 in self.expected_metadata().items()}
 
-    def dt_to_ts(self, dtime, format):
+    def dt_to_ts(self, dtime):
         """
         Converts datetime to timestamp format.
         """
-        date_stripped = int(time.mktime(dt.strptime(dtime, format).timetuple()))
-        return date_stripped
+        STANDARD_DATE_FORMATS = {
+            "%Y-%m-%dT00:00:00Z",
+            "%Y-%m-%dT00:00:00+00:00",
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%fZ"
+        }
+        for date_format in STANDARD_DATE_FORMATS:
+            try:
+                return int(time.mktime(dt.strptime(dtime, date_format).timetuple()))
+            except Exception as e:
+                pass
+        raise Exception(f"Cannot convert date '{dtime}' into timestamp, please check the date-format")
