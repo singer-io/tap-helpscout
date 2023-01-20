@@ -116,7 +116,7 @@ class HelpScoutClient:
                                      errors.Http429Error),
                           max_tries=7,
                           factor=3)
-    def request(self, method: str, path: str, url: Optional[str, None] = None, **kwargs) ->\
+    def request(self, method: str, path: str, url: Optional[str] = None, **kwargs) ->\
             Optional[Mapping[Any, Any]]:
         """Makes an HTTP Request based on given params
 
@@ -161,10 +161,10 @@ class HelpScoutClient:
 
         raise_for_error(response)
 
-    def get(self, path, **kwargs):
+    def get(self, path: str, **kwargs):
         """Initiates HTTP requests for GET method"""
         return self.request('GET', path=path, **kwargs)
 
-    def post(self, path, **kwargs):
+    def post(self, path: str, **kwargs):
         """Initiates HTTP requests for POST method"""
         return self.request('POST', path=path, **kwargs)
