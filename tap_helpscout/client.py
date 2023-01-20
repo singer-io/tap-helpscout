@@ -1,18 +1,30 @@
 import json
+from typing import Dict, Optional, Mapping, Any
 from datetime import datetime, timedelta
 import backoff
 import requests
 from datetime import timezone
 from singer import metrics
-from singer import utils
+from . import exceptions as errors
 
 
-class Server5xxError(Exception):
-    pass
-
-
-class Server429Error(Exception):
-    pass
+def raise_for_error(response: requests.Response) -> None:
+    """Raises the associated response exception. Takes in a response object,
+    checks the status code, and throws the associated exception based on the
+    status code.
+    """
+    try:
+        response.raise_for_status()
+    except (requests.HTTPError, requests.ConnectionError) as _:
+        try:
+            error_code = response.status_code
+            client_exception = getattr(
+                errors, f"Http{error_code}Error", errors.HttpClientException(message="Undefined "
+                                                                                     "Exception")
+            )
+            raise client_exception from None
+        except (ValueError, TypeError, AttributeError):
+            raise errors.HttpClientException(_) from None
 
 
 class HelpScoutClient:
@@ -21,9 +33,9 @@ class HelpScoutClient:
     # Nine is reasonable in this case.
 
     def __init__(self,
-                 config_path,
-                 config,
-                 dev_mode=False):
+                 config_path: str,
+                 config: Dict,
+                 dev_mode: Optional[bool] = False):
         self.__config_path = config_path
         self.__client_id = config['client_id']
         self.__client_secret = config['client_secret']
@@ -43,19 +55,24 @@ class HelpScoutClient:
     def __exit__(self, exception_type, exception_value, traceback):
         self.__session.close()
 
-    @backoff.on_exception(backoff.expo,
-                          Server5xxError,
-                          max_tries=5,
-                          factor=2)
+    @backoff.on_exception(wait_gen=backoff.expo,
+                          exception=(errors.Http500Error,
+                                     errors.Http503Error,
+                                     errors.Http504Error,
+                                     errors.Http429Error),
+                          max_tries=7,
+                          factor=3)
     def get_access_token(self):
+        """Generates access token required to send http requests"""
         # If tap is being executed in dev_mode then disable tap from creating new refresh and
         # access tokens
         if self.__dev_mode:
             if self.__access_token:
                 return
 
-            raise Exception("Access token is missing, unable to authenticate in dev mode")
+            raise errors.AccessTokenMissing
 
+        # Return nothing, If a valid access token is already available in the existing client object
         if self.__access_token and self.__expires > datetime.now(timezone.utc):
             return
 
@@ -73,14 +90,8 @@ class HelpScoutClient:
                 'refresh_token': self.__refresh_token,
             })
 
-        if response.status_code >= 500:
-            raise Server5xxError()
-
-        if response.status_code != 200:
-            helpscout_response = response.json()
-            helpscout_response.update(
-                {'status': response.status_code})
-            raise Exception(f'Unable to authenticate (HelpScout response: `{helpscout_response}`)')
+        if response.status_code >= 400:
+            raise_for_error(response)
 
         data = response.json()
 
@@ -98,13 +109,25 @@ class HelpScoutClient:
         expires_seconds = data['expires_in'] - 60  # pad by 60 seconds
         self.__expires = datetime.now(timezone.utc) + timedelta(seconds=expires_seconds)
 
-    @backoff.on_exception(backoff.expo,
-                          (Server5xxError, ConnectionError, Server429Error),
+    @backoff.on_exception(wait_gen=backoff.expo,
+                          exception=(errors.Http500Error,
+                                     errors.Http503Error,
+                                     errors.Http504Error,
+                                     errors.Http429Error),
                           max_tries=7,
                           factor=3)
-    @utils.ratelimit(400, 60)
-    def request(self, method, path=None, url=None, **kwargs):
+    def request(self, method: str, path: str, url: Optional[str, None] = None, **kwargs) ->\
+            Optional[Mapping[Any, Any]]:
+        """Makes an HTTP Request based on given params
 
+        Args:
+            method (str): Http method
+            path (str): endpoint for Http request
+            url (str): Base url for Http request
+
+        Returns:
+            Returns a json object for a successful http request
+        """
         self.get_access_token()
 
         if not url and self.__base_url is None:
@@ -133,20 +156,15 @@ class HelpScoutClient:
             response = self.__session.request(method, url, **kwargs)
             timer.tags[metrics.Tag.http_status_code] = response.status_code
 
-        if response.status_code >= 500:
-            raise Server5xxError()
+        if response.status_code in (200, 399):
+            return response.json()
 
-        # Use retry functionality in backoff to wait and retry if
-        # Response code equals 429 because rate limit has been exceeded
-        if response.status_code == 429:
-            raise Server429Error()
-
-        response.raise_for_status()
-
-        return response.json()
+        raise_for_error(response)
 
     def get(self, path, **kwargs):
+        """Initiates HTTP requests for GET method"""
         return self.request('GET', path=path, **kwargs)
 
     def post(self, path, **kwargs):
+        """Initiates HTTP requests for POST method"""
         return self.request('POST', path=path, **kwargs)
