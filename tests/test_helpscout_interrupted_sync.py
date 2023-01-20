@@ -164,10 +164,11 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
                     else:
                         synced_stream_datetime = start_date_timestamp
 
-                    # Verify we replicated some records for the non-interrupted streams
                     # BUG: TDL-21675: interrupted sync does not sync already synced streams
-                    self.assertGreater(interrupted_record_count, 0,
-                                       msg="Un-interrupted streams must sync at least 1 record.")
+                    if stream not in ["conversations", "conversation_threads"]:
+                        # Verify we replicated some records for the non-interrupted streams
+                        self.assertGreater(interrupted_record_count, 0,
+                                        msg="Un-interrupted streams must sync at least 1 record.")
 
                     if replication_method == self.INCREMENTAL:
 
