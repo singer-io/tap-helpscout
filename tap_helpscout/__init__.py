@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import sys
 import json
 import singer
@@ -9,6 +7,7 @@ from tap_helpscout.sync import sync
 
 LOGGER = singer.get_logger()
 
+# These are the required keys to be present in the configuration json
 REQUIRED_CONFIG_KEYS = [
     'client_id',
     'client_secret',
@@ -16,8 +15,11 @@ REQUIRED_CONFIG_KEYS = [
     'user_agent'
 ]
 
-def do_discover():
 
+def do_discover():
+    """
+    Starts discovery process
+    """
     LOGGER.info('Starting discover')
     catalog = discover()
     json.dump(catalog.to_dict(), sys.stdout, indent=2)
@@ -26,26 +28,23 @@ def do_discover():
 
 @singer.utils.handle_top_exception(LOGGER)
 def main():
-
     parsed_args = singer.utils.parse_args(REQUIRED_CONFIG_KEYS)
     if parsed_args.dev:
         LOGGER.warning("Executing tap in dev mode")
 
     with HelpScoutClient(parsed_args.config_path,
                          parsed_args.config,
-                         parsed_args.dev) as client:
+                         parsed_args.dev) as helpscout_client:
 
-        state = {}
-        if parsed_args.state:
-            state = parsed_args.state
-
+        state = parsed_args.state or {}
         if parsed_args.discover:
             do_discover()
         elif parsed_args.catalog:
-            sync(client=client,
+            sync(client=helpscout_client,
                  catalog=parsed_args.catalog,
                  state=state,
                  start_date=parsed_args.config['start_date'])
+
 
 if __name__ == '__main__':
     main()

@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 import backoff
 import requests
+from datetime import timezone
 from singer import metrics
 from singer import utils
 
@@ -16,7 +17,7 @@ class Server429Error(Exception):
 
 class HelpScoutClient:
 
-    # pylint: disable=too-many-instance-attributes
+    # Pylint: disable=too-many-instance-attributes
     # Nine is reasonable in this case.
 
     def __init__(self,
@@ -30,8 +31,8 @@ class HelpScoutClient:
         self.__user_agent = config['user_agent']
         self.__access_token = config.get('access_token')
         self.__dev_mode = dev_mode
-        # this is to make sure a new access token gets generated on every extraction
-        self.__expires = datetime.utcnow() - timedelta(seconds=10)
+        # This is to make sure a new access token gets generated on every extraction
+        self.__expires = datetime.now(timezone.utc) - timedelta(seconds=10)
         self.__session = requests.Session()
         self.__base_url = None
 
@@ -47,14 +48,15 @@ class HelpScoutClient:
                           max_tries=5,
                           factor=2)
     def get_access_token(self):
-        # if tap is being executed in dev_mode then disable tap from creating new refresh and access tokens
+        # If tap is being executed in dev_mode then disable tap from creating new refresh and
+        # access tokens
         if self.__dev_mode:
             if self.__access_token:
                 return
 
             raise Exception("Access token is missing, unable to authenticate in dev mode")
 
-        if self.__access_token and self.__expires > datetime.utcnow():
+        if self.__access_token and self.__expires > datetime.now(timezone.utc):
             return
 
         headers = {}
@@ -78,16 +80,14 @@ class HelpScoutClient:
             helpscout_response = response.json()
             helpscout_response.update(
                 {'status': response.status_code})
-            raise Exception(
-                'Unable to authenticate (HelpScout response: `{}`)'.format(
-                    helpscout_response))
+            raise Exception(f'Unable to authenticate (HelpScout response: `{helpscout_response}`)')
 
         data = response.json()
 
         self.__access_token = data['access_token']
         self.__refresh_token = data['refresh_token']
 
-        ## refresh_token rotates on every reauth
+        # Refresh token rotates on every re-auth
         with open(self.__config_path) as file:
             config = json.load(file)
         config['refresh_token'] = self.__refresh_token
@@ -96,7 +96,7 @@ class HelpScoutClient:
             json.dump(config, file, indent=2)
 
         expires_seconds = data['expires_in'] - 60  # pad by 60 seconds
-        self.__expires = datetime.utcnow() + timedelta(seconds=expires_seconds)
+        self.__expires = datetime.now(timezone.utc) + timedelta(seconds=expires_seconds)
 
     @backoff.on_exception(backoff.expo,
                           (Server5xxError, ConnectionError, Server429Error),
@@ -121,7 +121,7 @@ class HelpScoutClient:
 
         if 'headers' not in kwargs:
             kwargs['headers'] = {}
-        kwargs['headers']['Authorization'] = 'Bearer {}'.format(self.__access_token)
+        kwargs['headers']['Authorization'] = f'Bearer {self.__access_token}'
 
         if self.__user_agent:
             kwargs['headers']['User-Agent'] = self.__user_agent
@@ -137,7 +137,7 @@ class HelpScoutClient:
             raise Server5xxError()
 
         # Use retry functionality in backoff to wait and retry if
-        # response code equals 429 because rate limit has been exceeded
+        # Response code equals 429 because rate limit has been exceeded
         if response.status_code == 429:
             raise Server429Error()
 
