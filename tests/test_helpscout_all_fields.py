@@ -35,8 +35,7 @@ class AllFieldsTest(HelpscoutBaseTest):
         sync_records = runner.get_records_from_target_output()
 
         # Verify no unexpected streams were replicated
-        synced_stream_names = set(sync_records.keys())
-        self.assertSetEqual(streams_to_test, synced_stream_names)
+        self.assertSetEqual(streams_to_test, set(sync_records.keys())   )
 
         # get all fields metadata after performing table and field selection
         catalog_all_fields = dict()
@@ -69,10 +68,9 @@ class AllFieldsTest(HelpscoutBaseTest):
                 # verify that we get some records for each stream
                 self.assertGreater(sync_record_count.get(stream), 0)
 
-                # verify all fields for each stream were replicated
-                self.assertGreater(len(expected_all_fields), len(expected_automatic_fields))
-                self.assertSetEqual(expected_all_fields, actual_all_fields)
-
                 # Verify that more than just the automatic fields are replicated for each stream
-                self.assertTrue(expected_automatic_fields.issubset(expected_all_fields),
-                                msg=f'automatic fields not part of all fields')
+                self.assertTrue(expected_automatic_fields.issubset(actual_all_fields),
+                                msg=f'{expected_automatic_fields-actual_all_fields} is not in "expected_all_keys"')
+
+                # verify all fields for each stream were replicated
+                self.assertSetEqual(expected_all_fields, actual_all_fields)

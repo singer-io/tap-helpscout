@@ -29,7 +29,7 @@ class HelpscoutBaseTest(unittest.TestCase):
     INCREMENTAL = "INCREMENTAL"
     FULL_TABLE = "FULL_TABLE"
     START_DATE_FORMAT = "%Y-%m-%dT00:00:00Z"
-    BOOKMARK_COMPARISON_FORMAT = "%Y-%m-%dT00:00:00+00:00"
+    BOOKMARK_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     EXPECTED_PAGE_SIZE = "expected-page-size"
     EXPECTED_PARENT_STREAM = 'expected-parent-stream'
 
@@ -214,10 +214,10 @@ class HelpscoutBaseTest(unittest.TestCase):
 
         except ValueError:
             try:
-                date_stripped = dt.strptime(dtime, self.BOOKMARK_COMPARISON_FORMAT)
+                date_stripped = dt.strptime(dtime, self.BOOKMARK_DATE_FORMAT)
                 return_date = date_stripped + timedelta(days=days)
 
-                return dt.strftime(return_date, self.BOOKMARK_COMPARISON_FORMAT)
+                return dt.strftime(return_date, self.BOOKMARK_DATE_FORMAT)
 
             except ValueError:
                 return Exception("Datetime object is not of the format: {}".format(self.START_DATE_FORMAT))
@@ -330,7 +330,7 @@ class HelpscoutBaseTest(unittest.TestCase):
 
             # Verify all testable streams are selected
             selected = catalog_entry.get('annotated-schema').get('selected')
-            LOGGER.info("Validating selection on {}: {}".format(cat['stream_name'], selected))
+            LOGGER.info(f"Validating selection on {cat['stream_name']}: {selected}")
             if cat['stream_name'] not in expected_selected:
                 self.assertFalse(selected, msg="Stream selected, but not testable.")
                 continue # Skip remaining assertions if we aren't selecting this stream
@@ -340,8 +340,7 @@ class HelpscoutBaseTest(unittest.TestCase):
                 # Verify all fields within each selected stream are selected
                 for field, field_props in catalog_entry.get('annotated-schema').get('properties').items():
                     field_selected = field_props.get('selected')
-                    LOGGER.info("\tValidating selection on {}.{}: {}".format(
-                        cat['stream_name'], field, field_selected))
+                    LOGGER.info(f"\tValidating selection on {cat['stream_name']}.{field}: {field_selected}")
                     self.assertTrue(field_selected, msg="Field not selected.")
 
             # TDL-16245 : BUG : Replication key for all the streams are not being selected automatically
@@ -386,19 +385,3 @@ class HelpscoutBaseTest(unittest.TestCase):
                 for table, properties
                 in self.expected_metadata().items()}
 
-    def dt_to_ts(self, dtime):
-        """
-        Converts datetime to timestamp format.
-        """
-        STANDARD_DATE_FORMATS = {
-            "%Y-%m-%dT00:00:00Z",
-            "%Y-%m-%dT00:00:00+00:00",
-            "%Y-%m-%dT%H:%M:%SZ",
-            "%Y-%m-%dT%H:%M:%S.%fZ"
-        }
-        for date_format in STANDARD_DATE_FORMATS:
-            try:
-                return int(time.mktime(dt.strptime(dtime, date_format).timetuple()))
-            except Exception as e:
-                pass
-        raise Exception(f"Cannot convert date '{dtime}' into timestamp, please check the date-format")

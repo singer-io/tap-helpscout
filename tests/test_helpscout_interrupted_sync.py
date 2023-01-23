@@ -38,7 +38,7 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
         """
 
         self.start_date = self.get_properties()["start_date"]
-        start_date_timestamp = self.dt_to_ts(self.start_date)
+        start_date_timestamp = self.parse_date(self.start_date)
 
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
         expected_streams = self.expected_streams()
@@ -72,7 +72,7 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
         menagerie.set_state(conn_id, interrupted_sync_state)
 
         # Run sync after interruption
-        post_interrupted_sync_record_count_by_stream = self.run_and_verify_sync(conn_id)
+        self.run_and_verify_sync(conn_id)
         post_interrupted_sync_records = runner.get_records_from_target_output()
 
         post_interrupted_sync_state = menagerie.get_state(conn_id)
@@ -125,14 +125,14 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
 
                 if stream == interrupted_sync_state["currently_syncing"]:
                     # Assign the start date to the interrupted stream
-                    interrupted_stream_datetime = self.dt_to_ts(interrupted_sync_state["bookmarks"][stream])
+                    interrupted_stream_datetime = self.parse_date(interrupted_sync_state["bookmarks"][stream])
                     primary_key = self.expected_primary_keys()[stream].pop()
 
                     # Get primary keys of 1st sync records
                     full_records_primary_keys = [x[primary_key] for x in first_sync_stream_records]
 
                     for record in post_interrupted_sync_stream_records:
-                        record_time = self.dt_to_ts(record.get(list(replication_key)[0]))
+                        record_time = self.parse_date(record.get(list(replication_key)[0]))
 
                         # Verify resuming sync only replicates records with the replication key
                         # values greater or equal to the state for streams that were replicated
@@ -147,7 +147,7 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
                     # Record count for all streams of interrupted sync match expectations
                     records_after_interrupted_bookmark = 0
                     for record in first_sync_stream_records:
-                        record_time = self.dt_to_ts(record.get(list(replication_key)[0]))
+                        record_time = self.parse_date(record.get(list(replication_key)[0]))
                         if record_time >= interrupted_stream_datetime:
                             records_after_interrupted_bookmark += 1
 
@@ -160,7 +160,7 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
                     synced_stream_bookmark = interrupted_sync_state["bookmarks"].get(stream, None)
 
                     if synced_stream_bookmark:
-                        synced_stream_datetime = self.dt_to_ts(synced_stream_bookmark)
+                        synced_stream_datetime = self.parse_date(synced_stream_bookmark)
                     else:
                         synced_stream_datetime = start_date_timestamp
 
@@ -173,7 +173,7 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
                     if replication_method == self.INCREMENTAL:
 
                         for record in post_interrupted_sync_stream_records:
-                            record_time = self.dt_to_ts(record.get(list(replication_key)[0]))
+                            record_time = self.parse_date(record.get(list(replication_key)[0]))
 
                             # Verify resuming sync only replicates records with the replication key
                             # values greater or equal to the state for streams that were replicated
