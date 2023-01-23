@@ -2,9 +2,7 @@
 
 import sys
 import json
-import argparse
 import singer
-from singer import metadata, utils
 from tap_helpscout.client import HelpScoutClient
 from tap_helpscout.discover import discover
 from tap_helpscout.sync import sync
@@ -30,12 +28,12 @@ def do_discover():
 def main():
 
     parsed_args = singer.utils.parse_args(REQUIRED_CONFIG_KEYS)
+    if parsed_args.dev:
+        LOGGER.warning("Executing tap in dev mode")
 
     with HelpScoutClient(parsed_args.config_path,
-                         parsed_args.config['client_id'],
-                         parsed_args.config['client_secret'],
-                         parsed_args.config['refresh_token'],
-                         parsed_args.config['user_agent']) as client:
+                         parsed_args.config,
+                         parsed_args.dev) as client:
 
         state = {}
         if parsed_args.state:
