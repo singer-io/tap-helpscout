@@ -10,5 +10,5 @@ class Workflows(IncrementalStream, ABC):
     key_properties = ["id"]
     replication_key = "modified_at"
     replication_key_type = "datetime"
-    valid_replication_keys = ("updated_at",)
+    valid_replication_keys = ("modified_at",)
     data_key = "workflows"
