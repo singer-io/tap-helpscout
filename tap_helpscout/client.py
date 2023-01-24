@@ -29,13 +29,10 @@ def raise_for_error(response: requests.Response) -> None:
 
 class HelpScoutClient:
 
-    # Pylint: disable=too-many-instance-attributes
-    # Nine is reasonable in this case.
-
     def __init__(self,
                  config_path: str,
                  config: Dict,
-                 dev_mode: Optional[bool] = False):
+                 dev_mode: bool = False):
         self.__config_path = config_path
         self.__client_id = config['client_id']
         self.__client_secret = config['client_secret']
@@ -116,8 +113,7 @@ class HelpScoutClient:
                                      errors.Http429Error),
                           max_tries=7,
                           factor=3)
-    def request(self, method: str, path: str, url: Optional[str] = None, **kwargs) ->\
-            Optional[Mapping[Any, Any]]:
+    def request(self, method: str, path: str, url: str = "", **kwargs) -> Mapping[Any, Any]:
         """Makes an HTTP Request based on given params
 
         Args:
