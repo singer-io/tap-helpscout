@@ -1,5 +1,3 @@
-import sys
-import json
 import singer
 from tap_helpscout.client import HelpScoutClient
 from tap_helpscout.discover import discover
@@ -17,12 +15,10 @@ REQUIRED_CONFIG_KEYS = [
 
 
 def do_discover():
-    """
-    Starts discovery process
-    """
+    """Starts discovery process"""
     LOGGER.info('Starting discover')
     catalog = discover()
-    json.dump(catalog.to_dict(), sys.stdout, indent=2)
+    catalog.dump()
     LOGGER.info('Finished discover')
 
 
@@ -41,7 +37,7 @@ def main():
             do_discover()
         elif parsed_args.catalog:
             sync(client=helpscout_client,
-                 catalog=parsed_args.catalog,
+                 catalog=parsed_args.catalog or discover().dump(),
                  state=state,
                  start_date=parsed_args.config['start_date'])
 
