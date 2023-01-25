@@ -68,7 +68,7 @@ class DiscoveryTest(HelpscoutBaseTest):
                 expected_replication_method = self.expected_replication_method()[stream]
 
                 # workaround for TDL-16245 , remove after bug fix
-                expected_automatic_fields = expected_automatic_fields - self.expected_replication_keys().get(stream)
+                # expected_automatic_fields = expected_automatic_fields - self.expected_replication_keys().get(stream)
 
                 # collecting actual values
                 schema_and_metadata = menagerie.get_annotated_schema(conn_id, catalog['stream_id'])
