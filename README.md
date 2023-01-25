@@ -86,7 +86,7 @@ This tap:
 - Transformations: Fields camelCase to snake_case.
 
 [**workflows**](https://developer.helpscout.com/mailbox-api/endpoints/workflows/list/)
-- Endpoint: https://api.helpscout.net/v2/users
+- Endpoint: https://api.helpscout.net/v2/workflows
 - Primary keys: id
 - Foreign keys: mailbox_id (mailboxes)
 - Replication strategy: Incremental (query all, filter results)
