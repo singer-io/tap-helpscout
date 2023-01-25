@@ -44,7 +44,7 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
                 expected_keys = self.expected_automatic_fields().get(stream)
 
                 # workaround for TDL-16245 , remove after bug fix
-                expected_keys = expected_keys - self.expected_replication_keys().get(stream)
+                # expected_keys = expected_keys - self.expected_replication_keys().get(stream)
 
                 # collect actual values
                 stream_messages = all_messages.get(stream)
