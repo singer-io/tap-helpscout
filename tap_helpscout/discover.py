@@ -28,5 +28,6 @@ def discover():
     for schema_name, schema in schemas.items():
         schema_meta = schema_metadata[schema_name]
         streams.append({"stream": schema_name, "tap_stream_id": schema_name,
+                        "key_properties": STREAMS[schema_name].key_properties,
                         "schema": schema, "metadata": schema_meta})
     return Catalog.from_dict({"streams": streams})
