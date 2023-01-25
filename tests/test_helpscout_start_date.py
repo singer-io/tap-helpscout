@@ -1,6 +1,4 @@
-from tap_tester import menagerie, connections, runner
-from datetime import timezone
-import datetime
+from tap_tester import connections, runner, LOGGER
 
 from base import HelpscoutBaseTest
 
@@ -15,7 +13,7 @@ class StartDateTest(HelpscoutBaseTest):
         return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
-        print("Start date test for tap-helpscout")
+        LOGGER.info("Start date test for tap-helpscout")
 
     def test_run(self):
 
@@ -50,7 +48,7 @@ class StartDateTest(HelpscoutBaseTest):
         ### Update START DATE Between Syncs
         ##########################################################################
 
-        print("REPLICATION START DATE CHANGE: {} ===>>> {} ".format(self.start_date, self.start_date_2))
+        LOGGER.info(f"REPLICATION START DATE CHANGE: {self.start_date} ===>>> {self.start_date_2}")
         self.start_date = self.start_date_2
 
         ##########################################################################
