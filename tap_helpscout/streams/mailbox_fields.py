@@ -9,4 +9,5 @@ class MailBoxFields(FullStream, ABC):
     path = "/mailboxes/{}/fields"
     key_properties = ["id"]
     data_key = "fields"
+    is_child = True
 

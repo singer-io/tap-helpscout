@@ -13,3 +13,4 @@ class MailBoxes(IncrementalStream, ABC):
     valid_replication_keys = ("updated_at",)
     data_key = "mailboxes"
     child_streams = ["mailbox_fields", "mailbox_folders"]
+    is_child = False

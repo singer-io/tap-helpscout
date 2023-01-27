@@ -1,6 +1,9 @@
 from abc import abstractmethod, ABC
 from typing import Dict, Tuple
 from singer.metadata import get_standard_metadata, to_list, to_map, write
+import singer
+
+logger = singer.get_logger()
 
 
 class BaseStream:
@@ -46,9 +49,9 @@ class BaseStream:
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict):
         """Performs Sync."""
 
-    def __init__(self, client=None, config=None) -> None:
+    def __init__(self, client=None, start_date=None) -> None:
         self.client = client
-        self.config = config
+        self.start_date = start_date
 
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:
@@ -58,8 +61,7 @@ class BaseStream:
             "key_properties": cls.key_properties,
             "valid_replication_keys": cls.valid_replication_keys,
             "replication_method": cls.replication_method or cls.forced_replication_method,
-        }
-                                         )
+        })
         stream_metadata = to_map(stream_metadata)
         if cls.valid_replication_keys is not None:
             for key in cls.valid_replication_keys:
@@ -73,8 +75,20 @@ class IncrementalStream(BaseStream, ABC):
     replication_method = "INCREMENTAL"
     forced_replication_method = "INCREMENTAL"
 
+    def sync(self, state: Dict, schema: Dict, stream_metadata: Dict):
+        logger.info("Hello from sync method...")
+
 
 class FullStream(BaseStream, ABC):
+
     replication_method = "FULL_TABLE"
     forced_replication_method = "FULL_TABLE"
+    replication_key = None
     valid_replication_keys = None
+
+    def get_records(self):
+        pass
+
+
+
+

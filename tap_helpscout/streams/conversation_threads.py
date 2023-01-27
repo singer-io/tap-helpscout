@@ -9,3 +9,4 @@ class ConversationThreads(FullStream, ABC):
     path = "/conversations/{}/threads"
     key_properties = ["id"]
     data_key = "threads"
+    is_child = True

@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Optional, Mapping, Any
+from typing import Dict, Mapping, Any
 from datetime import datetime, timedelta
 import backoff
 import requests

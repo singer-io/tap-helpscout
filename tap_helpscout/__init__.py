@@ -1,7 +1,7 @@
 import singer
 from tap_helpscout.client import HelpScoutClient
 from tap_helpscout.discover import discover
-from tap_helpscout.sync import sync
+from tap_helpscout.sync1 import sync
 
 LOGGER = singer.get_logger()
 
