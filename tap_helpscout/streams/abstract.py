@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import Dict, Tuple
 from singer.metadata import get_standard_metadata, to_list, to_map, write
+from singer.bookmarks import ensure_bookmark_path
 import singer
 
 logger = singer.get_logger()
@@ -53,6 +54,20 @@ class BaseStream:
         self.client = client
         self.start_date = start_date
 
+    def get_bookmark(self, state: Dict) -> str:
+        """Retrieves bookmark value for a given stream from state file"""
+        return state.get("bookmarks", {}).get(self.tap_stream_id, self.start_date)
+
+    def write_bookmark(self, state: Dict, value: str) -> Dict:
+        """Writes bookmark value for a given stream to state file"""
+        state = ensure_bookmark_path(state, ["bookmarks", self.tap_stream_id])
+        state["bookmarks"][self.tap_stream_id] = value
+        return state
+
+    def get_records(self):
+        """Retrieves records from API as paginated streams"""
+
+
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:
         """Returns a `dict` for generating stream metadata."""
@@ -76,7 +91,7 @@ class IncrementalStream(BaseStream, ABC):
     forced_replication_method = "INCREMENTAL"
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict):
-        logger.info("Hello from sync method...")
+        pass
 
 
 class FullStream(BaseStream, ABC):
