@@ -21,7 +21,7 @@ def get_schemas() -> Tuple[Dict, Dict]:
 
 
 def discover():
-    """Performs permission check and starts discover."""
+    """Starts discover process"""
     schemas, schema_metadata = get_schemas()
     streams = []
 

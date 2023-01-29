@@ -1,7 +1,7 @@
 import singer
 from tap_helpscout.client import HelpScoutClient
 from tap_helpscout.discover import discover
-from tap_helpscout.sync1 import sync
+from tap_helpscout.sync import sync
 
 LOGGER = singer.get_logger()
 
@@ -38,7 +38,7 @@ def main():
         elif parsed_args.catalog:
             sync(client=helpscout_client,
                  catalog=parsed_args.catalog or discover().dump(),
-                 state=state,
+                 state=state or {},
                  start_date=parsed_args.config['start_date'])
 
 
