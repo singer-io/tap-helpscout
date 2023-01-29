@@ -115,6 +115,11 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {"modified_at"},
                 self.EXPECTED_PAGE_SIZE: 50
+            },
+            "ratings": {
+                self.PRIMARY_KEYS: {""},
+                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.EXPECTED_PAGE_SIZE: 50
             }
         }
 
