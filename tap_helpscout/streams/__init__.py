@@ -7,6 +7,7 @@ from .mailbox_folders import MailBoxFolders
 from .users import Users
 from .workflows import Workflows
 from .ratings import Ratings
+from .teams import Teams
 
 
 STREAMS = {
@@ -18,8 +19,8 @@ STREAMS = {
     MailBoxFolders.tap_stream_id: MailBoxFolders,
     Users.tap_stream_id: Users,
     Workflows.tap_stream_id: Workflows,
-    Ratings.tap_stream_id: Ratings
-
+    Ratings.tap_stream_id: Ratings,
+    Teams.tap_stream_id: Teams
 }
 
 
