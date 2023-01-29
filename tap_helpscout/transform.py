@@ -77,11 +77,37 @@ def transform_conversations(this_json, path=None):
     return this_json
 
 
+def get_rating_value(rating_id):
+    return {"1": "Great", "2": "Okay", "3": "Not Good"}.get(rating_id, "")
+
+
+def transform_ratings(this_json, path):
+    if path is None:
+        return this_json
+
+    for record in this_json[path]:
+        if 'id' in record:
+            record["conversation_id"] = record["id"]
+            record.pop("id")
+
+        # Adds ratings value based on ratingId
+        if "rating_id" in record:
+            record["rating"] = get_rating_value(str(record["rating_id"]))
+
+        record["thread_id"] = record["threadid"]
+        record.pop("threadid")
+
+    return this_json
+
+
 # Run all transforms: de-nests _embedded, removes _embedded/_links, and
 # Converts camelCase to snake_case for field_name keys.
-def transform_json(this_json, path):
+def transform_json(this_json, path, stream_name):
     de_nested_json = denest_embedded_nodes(this_json, path)
     no_links_json = remove_embedded_links(de_nested_json)
     converted_json = convert_json(no_links_json)
-    return transform_conversations(converted_json, path) if path == 'conversations' \
-        else converted_json
+    if stream_name == "conversations":
+        return transform_conversations(converted_json, path)
+    elif stream_name == "ratings":
+        return transform_ratings(converted_json, path)
+    return converted_json

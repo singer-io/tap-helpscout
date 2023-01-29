@@ -4,6 +4,7 @@ from singer.metadata import get_standard_metadata, to_list, to_map, write
 from singer.bookmarks import ensure_bookmark_path
 from singer import metrics, Transformer, write_state
 import singer
+from datetime import datetime, timezone
 
 from tap_helpscout.transform import transform_json
 
@@ -52,6 +53,11 @@ class BaseStream:
 
     @property
     @abstractmethod
+    def stream(self) -> Dict:
+        """Name of the stream"""
+
+    @property
+    @abstractmethod
     def path(self) -> str:
         """API endpoint for the stream"""
 
@@ -89,19 +95,22 @@ class BaseStream:
         """Retrieves bookmark value for a given stream from state file"""
         return state.get("bookmarks", {}).get(self.tap_stream_id, self.start_date)
 
-    def write_bookmark(self, state: Dict, value: str) -> Dict:
+    def write_bookmark(self, state: Dict, value: str) -> None:
         """Writes bookmark value for a given stream to state file"""
         state = ensure_bookmark_path(state, ["bookmarks", self.tap_stream_id])
         state["bookmarks"][self.tap_stream_id] = value
         write_state(state)
 
-    def make_request_params(self, state):
+    def make_request_params(self, state) -> str:
         """Generates request params required to send an API request"""
         if self.replication_query_field:
             self.params[self.replication_query_field] = self.get_bookmark(state)
+        if self.tap_stream_id == "ratings":
+            self.params["start"] = self.get_bookmark(state)
+            self.params["end"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         return '&'.join([f'{key}={value}' for (key, value) in self.params.items()])
 
-    def get_records(self, state: Dict):
+    def get_records(self, state: Dict) -> None:
         """Retrieves records from API as paginated streams"""
         page = total_pages = 1
         query_string = self.make_request_params(state)
@@ -111,16 +120,21 @@ class BaseStream:
                         f'{query_string_tmp}')
             data = self.client.get(self.path, params=query_string_tmp, endpoint=self.tap_stream_id)
             yield from self.transform_records(data)
-            page = data["page"]["number"]
-            total_pages = data["page"]["totalPages"]
+            page = data["page"] if self.tap_stream_id == "ratings" else data["page"]["number"]
+            total_pages = data["pages"] if self.tap_stream_id == "ratings" else \
+                data["page"]["totalPages"]
             if page == 0:
                 break
             page += 1
 
     def transform_records(self, data: Dict) -> List:
         """Transforms keys in extracted data"""
-        return transform_json(data["_embedded"], self.data_key)[self.data_key] if '_embedded' in \
-                                                                                  data else []
+        if self.tap_stream_id == "ratings":
+            return transform_json(data, self.data_key, self.stream)[self.data_key]
+        elif "_embedded" in data:
+            return transform_json(data["_embedded"], self.data_key, self.stream)[self.data_key]
+        else:
+            return []
 
     def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False):
         """Processes and writes transformed data"""
@@ -138,7 +152,7 @@ class BaseStream:
                                 parent_ids.append(record["id"])
                     singer.write_record(self.tap_stream_id, record)
                     counter.increment()
-
+            if self.replication_method == "INCREMENTAL":
                 self.write_bookmark(state, max_bookmark_value)
         return parent_ids
 
