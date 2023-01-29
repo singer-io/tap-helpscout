@@ -110,7 +110,7 @@ class BaseStream:
             self.params["end"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         return '&'.join([f'{key}={value}' for (key, value) in self.params.items()])
 
-    def get_records(self, state: Dict) -> None:
+    def get_records(self, state: Dict):
         """Retrieves records from API as paginated streams"""
         page = total_pages = 1
         query_string = self.make_request_params(state)
@@ -139,7 +139,7 @@ class BaseStream:
     def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False):
         """Processes and writes transformed data"""
         parent_ids = []
-        current_bookmark = self.get_bookmark(state)
+        current_bookmark = max_bookmark_value = self.get_bookmark(state)
         with Transformer() as transformer:
             with metrics.record_counter(self.tap_stream_id) as counter:
                 for record in self.get_records(state):
