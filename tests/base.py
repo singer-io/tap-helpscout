@@ -116,7 +116,7 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.REPLICATION_KEYS: {"modified_at"},
                 self.EXPECTED_PAGE_SIZE: 50
             },
-            "ratings": {
+            "happiness_ratings": {
                 self.PRIMARY_KEYS: {"thread_id, conversation_id", "rating_created_at"},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
                 self.EXPECTED_PAGE_SIZE: 100

@@ -93,10 +93,26 @@ This tap:
   - Bookmark: modified_at (date-time)
 - Transformations: Fields camelCase to snake_case.
 
+[**happiness_ratings**](https://developer.helpscout.com/mailbox-api/endpoints/reports/happiness/reports-happiness-ratings/)
+- Endpoint: https://api.helpscout.net/v2/reports/happiness/ratings
+- Primary keys: thread_id, rating_created_at, conversation_id
+- Foreign keys: conversation_id(conversations), thread_id(conversation_threads), rating_customer_id(customers), rating_user_id(users)
+- Replication strategy: Full table (query all)
+  - Bookmark: None
+- Transformations: Fields camelCase to snake_case.
+
+[**teams**](https://developer.helpscout.com/mailbox-api/endpoints/teams/list-teams/)
+- Endpoint: https://api.helpscout.net/v2/teams
+- Primary keys: id
+- Foreign keys: None
+- Replication strategy: Incremental (query all, filter results)
+  - Bookmark: updated_at (date-time)
+- Transformations: Fields camelCase to snake_case.
+
 
 ## Authentication
 [Refresh Access Token](https://developer.helpscout.com/mailbox-api/overview/authentication/#4-refresh-access-token)
-The tap should provides a `refresh_token`, `client_id` and `client_secret` to get an `access_token` when the tap starts. If/when the access_token expires in the middle of a run, the tap gets a new `access_token` and `refresh_token`. The `refresh_token` expires every use and new one is generated and persisted in the tap `config.json` until the next authentication.
+The tap should provide a `refresh_token`, `client_id` and `client_secret` to get an `access_token` when the tap starts. If/when the access_token expires in the middle of a run, the tap gets a new `access_token` and `refresh_token`. The `refresh_token` expires every use and new one is generated and persisted in the tap `config.json` until the next authentication.
 To generate the necessary API keys: `client_id` and `client_secret`, follow these instructions to [Create My App](https://developer.helpscout.com/mailbox-api/overview/authentication/#oauth2-application) in your User Profile of the HelpScout web console application.
 - App Name: tap-helpscout
 - Redirect URL: https://app.stitchdata.test:8080/v2/integrations/platform.helpscout/callback

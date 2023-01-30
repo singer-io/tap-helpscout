@@ -6,7 +6,7 @@ from .mailbox_fields import MailBoxFields
 from .mailbox_folders import MailBoxFolders
 from .users import Users
 from .workflows import Workflows
-from .ratings import Ratings
+from .happiness_ratings import HappinessRatings
 from .teams import Teams
 
 
@@ -19,7 +19,7 @@ STREAMS = {
     MailBoxFolders.tap_stream_id: MailBoxFolders,
     Users.tap_stream_id: Users,
     Workflows.tap_stream_id: Workflows,
-    Ratings.tap_stream_id: Ratings,
+    HappinessRatings.tap_stream_id: HappinessRatings,
     Teams.tap_stream_id: Teams
 }
 

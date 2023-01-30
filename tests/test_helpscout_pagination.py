@@ -44,7 +44,7 @@ class PaginationTest(HelpscoutBaseTest):
                 # challenge in helpscout. So we will be excluding the above streams from this assertion
                 # Spike created to address this issue : TDL - 16378
 
-                if stream not in ('users','workflows','mailboxes','mailbox_fields','mailbox_folders','ratings', 'teams'):
+                if stream not in ('users','workflows','mailboxes','mailbox_fields','mailbox_folders','happiness_ratings', 'teams'):
                     stream_page_size = self.expected_page_limits()[stream]
                     self.assertLessEqual(stream_page_size, record_count)
 
@@ -57,3 +57,4 @@ class PaginationTest(HelpscoutBaseTest):
                                     for message in sync_messages]
 
                 self.assertCountEqual(records_pks_set, records_pks_list, msg=f"We have duplicate records for {stream}")
+c
