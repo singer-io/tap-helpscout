@@ -73,6 +73,11 @@ class BaseStream:
 
     @property
     @abstractmethod
+    def parent(self) -> List:
+        """Parent stream name for a child stream"""
+
+    @property
+    @abstractmethod
     def tap_stream_id(self) -> str:
         """The unique identifier for the stream.
 
@@ -126,7 +131,7 @@ class BaseStream:
                                                                                   data else []
 
     def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False,
-                        parent_id=None, parent_name=""):
+                        parent_id=None):
         """Processes and writes transformed data"""
         parent_ids = []
         current_bookmark = self.get_bookmark(state)
@@ -136,7 +141,7 @@ class BaseStream:
                     record = transformer.transform(record, schema, stream_metadata)
                     # Insert the parentId into each child record
                     if parent_id:
-                        record[f"{parent_name}_id"] = parent_id
+                        record[f"{self.parent}_id"] = parent_id
                     if self.replication_key and self.replication_key in record:
                         record_bookmark = record[self.replication_key]
                         if record_bookmark >= current_bookmark:
@@ -153,7 +158,7 @@ class BaseStream:
         return parent_ids
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, parent_ids=None,
-             is_child=False, parent_name=None):
+             is_child=False):
         """
         1. Gets bookmark value for currently syncing stream.
         2. Generates request params required to make API call.
@@ -167,9 +172,9 @@ class BaseStream:
             return self.process_records(state, schema, stream_metadata, is_parent)
         for parent_id in parent_ids:
             logger.info(f"Starting sync for child stream {self.tap_stream_id} of parent"
-                        f" {parent_name} for "
+                        f" {self.parent} for "
                         f"Id {parent_id}")
-            self.process_records(state, schema, stream_metadata, is_parent, parent_id, parent_name)
+            self.process_records(state, schema, stream_metadata, is_parent, parent_id)
 
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:

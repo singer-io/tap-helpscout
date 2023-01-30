@@ -10,4 +10,5 @@ class MailBoxFields(FullStream, ABC):
     key_properties = ["id"]
     data_key = "fields"
     is_child = True
+    parent = "mailbox"
 

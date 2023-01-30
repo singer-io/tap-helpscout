@@ -33,7 +33,7 @@ def sync(client: HelpScoutClient, catalog: Catalog, state: Dict, start_date: str
                     child_stream_metadata = metadata.to_map(stream.metadata)
                     child_stream_obj = STREAMS[child_stream_id](client, start_date)
                     child_stream_obj.sync(state, child_stream_schema, child_stream_metadata,
-                                          parent_ids, True, tap_stream_id)
+                                          parent_ids, True)
 
     state = set_currently_syncing(state, None)
     write_state(state)

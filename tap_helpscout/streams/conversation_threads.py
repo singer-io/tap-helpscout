@@ -10,3 +10,4 @@ class ConversationThreads(FullStream, ABC):
     key_properties = ["id"]
     data_key = "threads"
     is_child = True
+    parent = "conversation"
