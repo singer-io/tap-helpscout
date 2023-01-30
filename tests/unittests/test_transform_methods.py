@@ -53,6 +53,4 @@ class TransformMethods(unittest.TestCase):
                                                               "/test-user-11122330b",
                                                   "facebook": "https://www.fb.com/12345"}}]}
 
-        print(transform.transform_json(mock_input, "conversations"))
-
         self.assertEquals(transform.transform_json(mock_input, "conversations"), expected_output)
