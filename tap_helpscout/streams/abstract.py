@@ -105,7 +105,7 @@ class BaseStream:
         """Generates request params required to send an API request"""
         if self.replication_query_field:
             self.params[self.replication_query_field] = self.get_bookmark(state)
-        if self.tap_stream_id == "ratings":
+        if self.tap_stream_id == "happiness_ratings":
             self.params["start"] = self.get_bookmark(state)
             self.params["end"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         return '&'.join([f'{key}={value}' for (key, value) in self.params.items()])
@@ -120,8 +120,9 @@ class BaseStream:
                         f'{query_string_tmp}')
             data = self.client.get(self.path, params=query_string_tmp, endpoint=self.tap_stream_id)
             yield from self.transform_records(data)
-            page = data["page"] if self.tap_stream_id == "ratings" else data["page"]["number"]
-            total_pages = data["pages"] if self.tap_stream_id == "ratings" else \
+            page = data["page"] if self.tap_stream_id == "happiness_ratings" else \
+                data["page"]["number"]
+            total_pages = data["pages"] if self.tap_stream_id == "happiness_ratings" else \
                 data["page"]["totalPages"]
             if page == 0:
                 break
@@ -129,7 +130,7 @@ class BaseStream:
 
     def transform_records(self, data: Dict) -> List:
         """Transforms keys in extracted data"""
-        if self.tap_stream_id == "ratings":
+        if self.tap_stream_id == "happiness_ratings":
             return transform_json(data, self.data_key, self.stream)[self.data_key]
         elif "_embedded" in data:
             return transform_json(data["_embedded"], self.data_key, self.stream)[self.data_key]

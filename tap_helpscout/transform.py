@@ -108,6 +108,6 @@ def transform_json(this_json, path, stream_name):
     converted_json = convert_json(no_links_json)
     if stream_name == "conversations":
         return transform_conversations(converted_json, path)
-    elif stream_name == "ratings":
+    elif stream_name == "happiness_ratings":
         return transform_ratings(converted_json, path)
     return converted_json
