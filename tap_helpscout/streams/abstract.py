@@ -81,6 +81,7 @@ class BaseStream:
         """
 
     def __init__(self, client=None, start_date=None) -> None:
+        self._path = None
         self._bookmark_value = None
         self.client = client
         self.start_date = start_date
@@ -101,9 +102,11 @@ class BaseStream:
             self.params[self.replication_query_field] = self.get_bookmark(state)
         return '&'.join([f'{key}={value}' for (key, value) in self.params.items()])
 
-    def get_records(self, state: Dict):
+    def get_records(self, state: Dict, parent_id=None):
         """Retrieves records from API as paginated streams"""
         page = total_pages = 1
+        if parent_id:
+            self.path = self.path.format(parent_id)
         query_string = self.make_request_params(state)
         while page <= total_pages:
             query_string_tmp = f"{query_string}&page={page}"
@@ -122,27 +125,35 @@ class BaseStream:
         return transform_json(data["_embedded"], self.data_key)[self.data_key] if '_embedded' in \
                                                                                   data else []
 
-    def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False):
+    def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False,
+                        parent_id=None, parent_name=""):
         """Processes and writes transformed data"""
         parent_ids = []
         current_bookmark = self.get_bookmark(state)
         with Transformer() as transformer:
             with metrics.record_counter(self.tap_stream_id) as counter:
-                for record in self.get_records(state):
+                for record in self.get_records(state, parent_id):
+                    record = transformer.transform(record, schema, stream_metadata)
+                    # Insert the parentId into each child record
+                    if parent_id:
+                        record[f"{parent_name}_id"] = parent_id
                     if self.replication_key and self.replication_key in record:
                         record_bookmark = record[self.replication_key]
                         if record_bookmark >= current_bookmark:
-                            max_bookmark_value = max(current_bookmark, record[self.replication_key])
-                            record = transformer.transform(record, schema, stream_metadata)
+                            max_bookmark_value = record_bookmark
+                            singer.write_record(self.tap_stream_id, record)
+                            counter.increment()
                             if is_parent:
                                 parent_ids.append(record["id"])
-                    singer.write_record(self.tap_stream_id, record)
-                    counter.increment()
-
-                self.write_bookmark(state, max_bookmark_value)
+                    else:
+                        singer.write_record(self.tap_stream_id, record)
+                        counter.increment()
+                if self.replication_method == "INCREMENTAL":
+                    self.write_bookmark(state, max_bookmark_value)
         return parent_ids
 
-    def sync(self, state: Dict, schema: Dict, stream_metadata: Dict):
+    def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, parent_ids=None,
+             is_child=False, parent_name=None):
         """
         1. Gets bookmark value for currently syncing stream.
         2. Generates request params required to make API call.
@@ -151,7 +162,14 @@ class BaseStream:
         5. Processes each record and writes it to stdout and saves the bookmark.
         6. Checks if the current stream as children. If yes, repeats same process for child stream
         """
-        parent_ids = self.process_records(state, schema, stream_metadata)
+        is_parent = bool(self.child_streams)
+        if not is_child:
+            return self.process_records(state, schema, stream_metadata, is_parent)
+        for parent_id in parent_ids:
+            logger.info(f"Starting sync for child stream {self.tap_stream_id} of parent"
+                        f" {parent_name} for "
+                        f"Id {parent_id}")
+            self.process_records(state, schema, stream_metadata, is_parent, parent_id, parent_name)
 
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:
@@ -173,6 +191,10 @@ class BaseStream:
     @bookmark_value.setter
     def bookmark_value(self, value):
         self._bookmark_value = value
+
+    @path.setter
+    def path(self, value):
+        self._path = value
 
 
 class IncrementalStream(BaseStream, ABC):
