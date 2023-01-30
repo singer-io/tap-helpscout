@@ -24,7 +24,7 @@ class Http403Error(HttpClientException):
     """Class to handle 403 Access Denied exception"""
 
     message = "Access denied. Your OAuth2 token is valid, but you are denied access - the " \
-              "response should contain details. "
+              "response should contain details."
 
 
 class Http404Error(HttpClientException):
@@ -43,14 +43,14 @@ class Http412Error(HttpClientException):
     """Class to handle 412 Precondition failed exception"""
 
     message = "Precondition failed. The request was well formed and valid, but some other " \
-              "conditions were not met. "
+              "conditions were not met."
 
 
 class Http413Error(HttpClientException):
     """Class to handle 413 Payload Too Large exception"""
 
     message = "Payload Too Large. The request was well formed and valid, but some other " \
-              "conditions were not met. "
+              "conditions were not met."
 
 
 class Http415Error(HttpClientException):
