@@ -12,4 +12,5 @@ class Teams(IncrementalStream, ABC):
     replication_key_type = "datetime"
     valid_replication_keys = ("updated_at",)
     data_key = "teams"
+    child_streams = ["team_users"]
     is_child = False

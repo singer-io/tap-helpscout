@@ -8,6 +8,7 @@ from .users import Users
 from .workflows import Workflows
 from .happiness_ratings import HappinessRatings
 from .teams import Teams
+from .team_users import TeamUsers
 
 
 STREAMS = {
@@ -20,7 +21,8 @@ STREAMS = {
     Users.tap_stream_id: Users,
     Workflows.tap_stream_id: Workflows,
     HappinessRatings.tap_stream_id: HappinessRatings,
-    Teams.tap_stream_id: Teams
+    Teams.tap_stream_id: Teams,
+    TeamUsers.tap_stream_id: TeamUsers
 }
 
 
