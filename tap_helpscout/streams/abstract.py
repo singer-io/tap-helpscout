@@ -133,17 +133,17 @@ class BaseStream:
                         parent_id=None):
         """Processes and writes transformed data"""
         parent_ids = set()
-        current_bookmark = self.get_bookmark(state)
+        max_bookmark_value = self.get_bookmark(state)
         with Transformer() as transformer:
             with metrics.record_counter(self.tap_stream_id) as counter:
                 for record in self.get_records(state, parent_id):
-                    record = transformer.transform(record, schema, stream_metadata)
-                    # Insert the parentId into each child record
                     if parent_id:
                         record[f"{self.parent}_id"] = parent_id
+                    record = transformer.transform(record, schema, stream_metadata)
+                    # Insert the parentId into each child record
                     if self.replication_key and self.replication_key in record:
                         record_bookmark = record[self.replication_key]
-                        if record_bookmark >= current_bookmark:
+                        if record_bookmark >= max_bookmark_value:
                             max_bookmark_value = record_bookmark
                             singer.write_record(self.tap_stream_id, record)
                             counter.increment()

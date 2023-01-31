@@ -78,7 +78,6 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
                 self.EXPECTED_PAGE_SIZE: 50,
-                self.FOREIGN_KEYS: {"conversation_id"},
                 self.EXPECTED_PARENT_STREAM: "conversations"
             },
             "customers": {
@@ -154,7 +153,7 @@ class HelpscoutBaseTest(unittest.TestCase):
        auto_fields = {}
        for k,v in self.expected_metadata().items():
 
-          auto_fields[k] = v.get(self.PRIMARY_KEYS, set()) | v.get(self.REPLICATION_KEYS, set())
+          auto_fields[k] = v.get(self.PRIMARY_KEYS, set()) | v.get(self.REPLICATION_KEYS, set()) | v.get(self.FOREIGN_KEYS, set())
        return auto_fields
 
     def expected_replication_method(self):
