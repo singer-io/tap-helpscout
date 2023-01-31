@@ -32,6 +32,8 @@ def sync(client: HelpScoutClient, catalog: Catalog, state: Dict, start_date: str
                     child_stream_schema = stream.schema.to_dict()
                     child_stream_metadata = metadata.to_map(stream.metadata)
                     child_stream_obj = STREAMS[child_stream_id](client, start_date)
+                    write_schema(child_stream_id, child_stream_schema,
+                                 child_stream_obj.key_properties, child_stream.replication_key)
                     child_stream_obj.sync(state, child_stream_schema, child_stream_metadata,
                                           parent_ids, True)
 

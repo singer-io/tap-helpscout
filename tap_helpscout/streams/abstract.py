@@ -110,14 +110,13 @@ class BaseStream:
     def get_records(self, state: Dict, parent_id=None):
         """Retrieves records from API as paginated streams"""
         page = total_pages = 1
-        if parent_id:
-            self.path = self.path.format(parent_id)
+        path = self.path.format(parent_id) if parent_id else self.path
         query_string = self.make_request_params(state)
         while page <= total_pages:
             query_string_tmp = f"{query_string}&page={page}"
-            logger.info(f'URL for {self.tap_stream_id}: https://api.helpscout.net/v2{self.path}?'
+            logger.info(f'URL for {self.tap_stream_id}: https://api.helpscout.net/v2{path}?'
                         f'{query_string_tmp}')
-            data = self.client.get(self.path, params=query_string_tmp, endpoint=self.tap_stream_id)
+            data = self.client.get(path, params=query_string_tmp, endpoint=self.tap_stream_id)
             yield from self.transform_records(data)
             page = data["page"]["number"]
             total_pages = data["page"]["totalPages"]
@@ -133,7 +132,7 @@ class BaseStream:
     def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False,
                         parent_id=None):
         """Processes and writes transformed data"""
-        parent_ids = []
+        parent_ids = set()
         current_bookmark = self.get_bookmark(state)
         with Transformer() as transformer:
             with metrics.record_counter(self.tap_stream_id) as counter:
@@ -149,7 +148,7 @@ class BaseStream:
                             singer.write_record(self.tap_stream_id, record)
                             counter.increment()
                             if is_parent:
-                                parent_ids.append(record["id"])
+                                parent_ids.add(record["id"])
                     else:
                         singer.write_record(self.tap_stream_id, record)
                         counter.increment()
