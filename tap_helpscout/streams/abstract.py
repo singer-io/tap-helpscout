@@ -4,8 +4,9 @@ from singer.metadata import get_standard_metadata, to_list, to_map, write
 from singer.bookmarks import ensure_bookmark_path
 from singer import metrics, Transformer, write_state
 import singer
-
+from datetime import datetime
 from tap_helpscout.transform import transform_json
+from tap_helpscout.helpers import parse_date
 
 logger = singer.get_logger()
 
@@ -133,7 +134,7 @@ class BaseStream:
                         parent_id=None):
         """Processes and writes transformed data"""
         parent_ids = set()
-        max_bookmark_value = self.get_bookmark(state)
+        current_bookmark = max_bookmark_value = self.get_bookmark(state)
         with Transformer() as transformer:
             with metrics.record_counter(self.tap_stream_id) as counter:
                 for record in self.get_records(state, parent_id):
@@ -143,11 +144,12 @@ class BaseStream:
                     # Insert the parentId into each child record
                     if self.replication_key and self.replication_key in record:
                         record_bookmark = record[self.replication_key]
-                        if record_bookmark >= max_bookmark_value:
+                        if parse_date(record_bookmark) >= parse_date(current_bookmark):
                             max_bookmark_value = record_bookmark
                             singer.write_record(self.tap_stream_id, record)
                             counter.increment()
                             if is_parent:
+                                # Store the parent id to sync the child streams
                                 parent_ids.add(record["id"])
                     else:
                         singer.write_record(self.tap_stream_id, record)
