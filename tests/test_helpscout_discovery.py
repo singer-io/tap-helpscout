@@ -1,7 +1,7 @@
 """Test tap discovery mode and metadata."""
 import re
 
-from tap_tester import menagerie, connections
+from tap_tester import menagerie, connections, LOGGER
 
 from base import HelpscoutBaseTest
 
@@ -14,7 +14,7 @@ class DiscoveryTest(HelpscoutBaseTest):
         return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
-        print("Discovery Test for tap-helpscout")
+        LOGGER.info("Discovery Test for tap-helpscout")
 
     def test_run(self):
         """
@@ -40,9 +40,7 @@ class DiscoveryTest(HelpscoutBaseTest):
 
         found_catalogs = self.run_and_verify_check_mode(conn_id)
 
-       # print(found_catalogs)
-
-        print("Established Connection to Helpscout")
+        LOGGER.info("Established Connection to Helpscout")
 
         # Verify stream names follow naming convention
         # streams should only have lowercase alphas and underscores
@@ -50,8 +48,6 @@ class DiscoveryTest(HelpscoutBaseTest):
         found_catalog_names = {c['tap_stream_id'] for c in found_catalogs}
         self.assertTrue(all([re.fullmatch(r"[a-z_]+",  name) for name in found_catalog_names]),
                         msg="One or more streams don't follow standard naming")
-
-       # print(found_catalog_names)
 
         for stream in streams_to_test:
             with self.subTest(stream=stream):
@@ -63,12 +59,13 @@ class DiscoveryTest(HelpscoutBaseTest):
 
                 # collecting expected values
                 expected_primary_keys = self.expected_primary_keys()[stream]
+                expected_foreign_keys = self.expected_foreign_keys()[stream]
                 expected_replication_keys = self.expected_replication_keys()[stream]
-                expected_automatic_fields = expected_primary_keys | expected_replication_keys
+                expected_automatic_fields = self.expected_automatic_fields()[stream]
                 expected_replication_method = self.expected_replication_method()[stream]
 
-                # workaround for TDL-16245 , remove after bug fix
-                expected_automatic_fields = expected_automatic_fields - self.expected_replication_keys().get(stream)
+                if stream == "conversation_threads":
+                    expected_automatic_fields -= expected_foreign_keys
 
                 # collecting actual values
                 schema_and_metadata = menagerie.get_annotated_schema(conn_id, catalog['stream_id'])
@@ -77,6 +74,10 @@ class DiscoveryTest(HelpscoutBaseTest):
                 actual_primary_keys = set(
                     stream_properties[0].get(
                         "metadata", {self.PRIMARY_KEYS: []}).get(self.PRIMARY_KEYS, [])
+                )
+                actual_foreign_keys = set(
+                    stream_properties[0].get(
+                        "metadata", {self.FOREIGN_KEYS: []}).get(self.FOREIGN_KEYS, [])
                 )
                 actual_replication_keys = set(
                     stream_properties[0].get(
@@ -89,8 +90,6 @@ class DiscoveryTest(HelpscoutBaseTest):
                     if item.get("metadata").get("inclusion") == "automatic"
                 )
 
-
-
                 ##########################################################################
                 ### metadata assertions
                 ##########################################################################
@@ -101,14 +100,18 @@ class DiscoveryTest(HelpscoutBaseTest):
                                 "\nstream_properties | {}".format(stream_properties))
 
                 # verify primary key(s)
-                self.assertSetEqual(expected_primary_keys, actual_primary_keys, msg = f"expected primary keys is {expected_primary_keys} but actual primary keys is {actual_primary_keys}")
+                self.assertSetEqual(expected_primary_keys, actual_primary_keys,
+                                    msg=f"expected primary keys is {expected_primary_keys} but actual primary keys is {actual_primary_keys}")
 
-                # verify replication key(s)
-                self.assertEqual(expected_replication_keys, actual_replication_keys, msg = f"expected replication key is {expected_replication_keys} but actual replication key is {actual_replication_keys}")
+                # verify replication method
+                self.assertEqual(expected_replication_method, actual_replication_method,
+                                 msg=f"expected replication method is {expected_replication_method} but actual replication method is {actual_replication_method}")
 
                 # verify replication key is present for any stream with replication method = INCREMENTAL
                 if actual_replication_method == 'INCREMENTAL':
-                    self.assertEqual(expected_replication_keys, actual_replication_keys)
+                    # verify replication key(s)
+                    self.assertEqual(expected_replication_keys, actual_replication_keys,
+                                     msg=f"expected replication key is {expected_replication_keys} but actual replication key is {actual_replication_keys}")
                 else:
                     self.assertEqual(actual_replication_keys,set())
 
@@ -126,3 +129,7 @@ class DiscoveryTest(HelpscoutBaseTest):
                          and item.get("breadcrumb", ["properties", None])[1]
                          not in actual_automatic_fields}),
                     msg="Not all non key properties are set to available in metadata")
+
+                # For child streams only - BUG : TDL-16580 : metadata does not have foreign_keys for conversation_threads
+                # verify the foregin key on a child stream is specified
+                #self.assertEqual(expected_foreign_keys, actual_foreign_keys)

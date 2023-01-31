@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Optional, Mapping, Any
+from typing import Dict, Mapping, Any
 from datetime import datetime, timedelta
 import backoff
 import requests
@@ -52,13 +52,6 @@ class HelpScoutClient:
     def __exit__(self, exception_type, exception_value, traceback):
         self.__session.close()
 
-    @backoff.on_exception(wait_gen=backoff.expo,
-                          exception=(errors.Http500Error,
-                                     errors.Http503Error,
-                                     errors.Http504Error,
-                                     errors.Http429Error),
-                          max_tries=7,
-                          factor=3)
     def get_access_token(self):
         """Generates access token required to send http requests"""
         # If tap is being executed in dev_mode then disable tap from creating new refresh and
@@ -152,7 +145,7 @@ class HelpScoutClient:
             response = self.__session.request(method, url, **kwargs)
             timer.tags[metrics.Tag.http_status_code] = response.status_code
 
-        if response.status_code in (200, 399):
+        if response.status_code == 200:
             return response.json()
 
         raise_for_error(response)

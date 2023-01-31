@@ -1,5 +1,4 @@
-from tap_tester import menagerie, connections, runner
-import re
+from tap_tester import connections, runner, LOGGER
 
 from base import HelpscoutBaseTest
 
@@ -9,7 +8,7 @@ class PaginationTest(HelpscoutBaseTest):
         return "tap_helpscout_tests_using_shared_token_chaining"
 
     def test_name(self):
-        print("Pagination Test for tap-helpscout")
+        LOGGER.info("Pagination Test for tap-helpscout")
 
     def test_run(self):
 

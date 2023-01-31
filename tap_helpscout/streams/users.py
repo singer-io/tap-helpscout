@@ -12,4 +12,5 @@ class Users(IncrementalStream, ABC):
     replication_key_type = "datetime"
     valid_replication_keys = ("updated_at",)
     data_key = "users"
+    is_child = False
 

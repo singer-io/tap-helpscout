@@ -12,3 +12,5 @@ class MailBoxFolders(IncrementalStream, ABC):
     replication_key_type = "datetime"
     valid_replication_keys = ("updated_at",)
     data_key = "folders"
+    is_child = True
+    parent = "mailbox"

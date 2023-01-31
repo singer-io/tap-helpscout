@@ -19,3 +19,4 @@ class Conversations(IncrementalStream, ABC):
         "sortOrder": "asc"
     }
     child_streams = ["conversation_threads"]
+    is_child = False

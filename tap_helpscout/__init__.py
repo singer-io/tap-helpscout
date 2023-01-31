@@ -38,7 +38,7 @@ def main():
         elif parsed_args.catalog:
             sync(client=helpscout_client,
                  catalog=parsed_args.catalog or discover().dump(),
-                 state=state,
+                 state=state or {},
                  start_date=parsed_args.config['start_date'])
 
 

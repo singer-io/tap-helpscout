@@ -17,3 +17,4 @@ class Customers(IncrementalStream, ABC):
         "sortField": "modifiedAt",
         "sortOrder": "asc"
     }
+    is_child = False
