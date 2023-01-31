@@ -4,7 +4,8 @@ from .abstract import IncrementalStream
 
 
 class Conversations(IncrementalStream, ABC):
-    """Class for `conversations` stream"""
+    """Class for `conversations` stream."""
+
     stream = tap_stream_id = "conversations"
     path = "/conversations"
     key_properties = ["id"]
@@ -13,10 +14,6 @@ class Conversations(IncrementalStream, ABC):
     valid_replication_keys = ("updated_at",)
     replication_query_field = "modifiedSince"
     data_key = "conversations"
-    params = {
-        "status": "all",
-        "sortField": "modifiedAt",
-        "sortOrder": "asc"
-    }
+    params = {"status": "all", "sortField": "modifiedAt", "sortOrder": "asc"}
     child_streams = ["conversation_threads"]
     is_child = False

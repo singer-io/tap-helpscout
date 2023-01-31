@@ -4,7 +4,8 @@ from .abstract import IncrementalStream
 
 
 class Workflows(IncrementalStream, ABC):
-    """Class for `workflows` stream"""
+    """Class for `workflows` stream."""
+
     stream = tap_stream_id = "workflows"
     path = "/workflows"
     key_properties = ["id"]

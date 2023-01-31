@@ -4,7 +4,8 @@ from .abstract import IncrementalStream
 
 
 class Users(IncrementalStream, ABC):
-    """Class for `users` stream"""
+    """Class for `users` stream."""
+
     stream = tap_stream_id = "users"
     path = "/users"
     key_properties = ["id"]
@@ -13,4 +14,3 @@ class Users(IncrementalStream, ABC):
     valid_replication_keys = ("updated_at",)
     data_key = "users"
     is_child = False
-
