@@ -57,4 +57,3 @@ class PaginationTest(HelpscoutBaseTest):
                                     for message in sync_messages]
 
                 self.assertCountEqual(records_pks_set, records_pks_list, msg=f"We have duplicate records for {stream}")
-c
