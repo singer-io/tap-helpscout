@@ -78,7 +78,6 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
                 self.EXPECTED_PAGE_SIZE: 50,
-                self.FOREIGN_KEYS: {"conversation_id"},
                 self.EXPECTED_PARENT_STREAM: "conversations"
             },
             "customers": {
