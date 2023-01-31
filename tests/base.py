@@ -130,7 +130,7 @@ class HelpscoutBaseTest(unittest.TestCase):
 
     def expected_streams(self):
        """A set of expected stream names"""
-       return set(self.expected_metadata().keys()) - {"teams"}
+       return set(self.expected_metadata().keys())
 
     def expected_primary_keys(self):
        """

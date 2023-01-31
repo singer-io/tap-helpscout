@@ -29,7 +29,7 @@ class StartDateTest(HelpscoutBaseTest):
         # instantiate connection
         conn_id_1 = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 
-        streams_to_test = self.expected_streams()
+        streams_to_test = self.expected_streams() - {"teams"}
 
         # run check mode
         found_catalogs_1 = self.run_and_verify_check_mode(conn_id_1)
