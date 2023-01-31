@@ -1,10 +1,9 @@
 from abc import abstractmethod, ABC
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Iterator, Set
 from singer.metadata import get_standard_metadata, to_list, to_map, write
 from singer.bookmarks import ensure_bookmark_path
 from singer import metrics, Transformer, write_state
 import singer
-from datetime import datetime
 from tap_helpscout.transform import transform_json
 from tap_helpscout.helpers import parse_date
 
@@ -87,7 +86,6 @@ class BaseStream:
         """
 
     def __init__(self, client=None, start_date=None) -> None:
-        self._path = None
         self._bookmark_value = None
         self.client = client
         self.start_date = start_date
@@ -96,19 +94,19 @@ class BaseStream:
         """Retrieves bookmark value for a given stream from state file"""
         return state.get("bookmarks", {}).get(self.tap_stream_id, self.start_date)
 
-    def write_bookmark(self, state: Dict, value: str) -> Dict:
+    def write_bookmark(self, state: Dict, value: str) -> None:
         """Writes bookmark value for a given stream to state file"""
         state = ensure_bookmark_path(state, ["bookmarks", self.tap_stream_id])
         state["bookmarks"][self.tap_stream_id] = value
         write_state(state)
 
-    def make_request_params(self, state):
+    def make_request_params(self, state) -> str:
         """Generates request params required to send an API request"""
         if self.replication_query_field:
             self.params[self.replication_query_field] = self.get_bookmark(state)
         return '&'.join([f'{key}={value}' for (key, value) in self.params.items()])
 
-    def get_records(self, state: Dict, parent_id=None):
+    def get_records(self, state: Dict, parent_id=None) -> Iterator[Dict]:
         """Retrieves records from API as paginated streams"""
         page = total_pages = 1
         path = self.path.format(parent_id) if parent_id else self.path
@@ -131,7 +129,7 @@ class BaseStream:
                                                                                   data else []
 
     def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False,
-                        parent_id=None):
+                        parent_id=None) -> Set:
         """Processes and writes transformed data"""
         parent_ids = set()
         current_bookmark = max_bookmark_value = self.get_bookmark(state)
@@ -178,7 +176,7 @@ class BaseStream:
             self.process_records(state, schema, stream_metadata, is_parent, parent_id)
 
     @classmethod
-    def get_metadata(cls, schema) -> Dict[str, str]:
+    def get_metadata(cls, schema: Dict) -> Dict[str, str]:
         """Returns a `dict` for generating stream metadata."""
         stream_metadata = get_standard_metadata(**{
             "schema": schema,
@@ -198,12 +196,9 @@ class BaseStream:
     def bookmark_value(self, value):
         self._bookmark_value = value
 
-    @path.setter
-    def path(self, value):
-        self._path = value
-
 
 class IncrementalStream(BaseStream, ABC):
+    """Base class for Incremental table stream"""
     replication_method = "INCREMENTAL"
     forced_replication_method = "INCREMENTAL"
     params = {}
@@ -212,7 +207,7 @@ class IncrementalStream(BaseStream, ABC):
 
 
 class FullStream(BaseStream, ABC):
-
+    """Base class for Full table stream"""
     replication_method = "FULL_TABLE"
     forced_replication_method = "FULL_TABLE"
     replication_key = None
