@@ -15,7 +15,7 @@ class PaginationTest(HelpscoutBaseTest):
         # instantiate connection
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)
 
-        streams_to_test = self.expected_streams() - {"teams"}
+        streams_to_test = self.expected_streams()
 
         # Run check mode
         found_catalogs = self.run_and_verify_check_mode(conn_id)
