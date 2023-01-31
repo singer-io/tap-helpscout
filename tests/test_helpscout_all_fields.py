@@ -73,8 +73,4 @@ class AllFieldsTest(HelpscoutBaseTest):
                                 msg=f'{expected_automatic_fields-actual_all_fields} is not in "expected_all_keys"')
 
                 # verify all fields for each stream were replicated
-                if stream == "teams":
-                    # Data for photo_url is not being extracted if a team has no image for
-                    # its profile
-                    expected_all_fields = expected_all_fields - {"photo_url"}
                 self.assertSetEqual(expected_all_fields, actual_all_fields)
