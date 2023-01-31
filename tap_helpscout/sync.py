@@ -29,7 +29,7 @@ def sync(client: HelpScoutClient, catalog: Catalog, state: Dict, start_date: str
                 # Sync only if the child stream is selected
                 if child_stream.is_selected():
                     child_stream_id = child_stream.tap_stream_id
-                    child_stream_schema = stream.schema.to_dict()
+                    child_stream_schema = child_stream.schema.to_dict()
                     child_stream_metadata = metadata.to_map(stream.metadata)
                     child_stream_obj = STREAMS[child_stream_id](client, start_date)
                     write_schema(child_stream_id, child_stream_schema,
