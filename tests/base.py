@@ -86,6 +86,11 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.REPLICATION_KEYS: {"updated_at"},
                 self.EXPECTED_PAGE_SIZE: 50
             },
+            "happiness_ratings_report": {
+                self.PRIMARY_KEYS: {"rating_customer_id", "conversation_id", "rating_created_at"},
+                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.EXPECTED_PAGE_SIZE: 100
+            },
             "mailboxes": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
@@ -103,6 +108,17 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.REPLICATION_KEYS: {"updated_at"},
                 self.EXPECTED_PAGE_SIZE: 50
             },
+            "teams": {
+                self.PRIMARY_KEYS: {"id"},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {"updated_at"},
+                self.EXPECTED_PAGE_SIZE: 50
+            },
+            "team_members": {
+                self.PRIMARY_KEYS: {"team_id", "user_id"},
+                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.EXPECTED_PAGE_SIZE: 50
+            },
             "users": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
@@ -113,22 +129,6 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {"modified_at"},
-                self.EXPECTED_PAGE_SIZE: 50
-            },
-            "happiness_ratings": {
-                self.PRIMARY_KEYS: {"rating_customer_id", "conversation_id", "rating_created_at"},
-                self.REPLICATION_METHOD: self.FULL_TABLE,
-                self.EXPECTED_PAGE_SIZE: 100
-            },
-            "teams": {
-                self.PRIMARY_KEYS: {"id"},
-                self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {"updated_at"},
-                self.EXPECTED_PAGE_SIZE: 50
-            },
-            "team_users": {
-                self.PRIMARY_KEYS: {"team_id", "user_id"},
-                self.REPLICATION_METHOD: self.FULL_TABLE,
                 self.EXPECTED_PAGE_SIZE: 50
             }
         }

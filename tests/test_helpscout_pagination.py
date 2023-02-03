@@ -44,7 +44,7 @@ class PaginationTest(HelpscoutBaseTest):
                 # challenge in helpscout. So we will be excluding the above streams from this assertion
                 # Spike created to address this issue : TDL - 16378
 
-                if stream not in ('users','workflows','mailboxes','mailbox_fields','mailbox_folders','happiness_ratings', 'teams', 'team_users'):
+                if stream not in ('users','workflows','mailboxes','mailbox_fields','mailbox_folders','happiness_ratings_report', 'teams', 'team_members'):
                     stream_page_size = self.expected_page_limits()[stream]
                     self.assertLessEqual(stream_page_size, record_count)
 
