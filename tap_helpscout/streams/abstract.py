@@ -107,6 +107,7 @@ class BaseStream(ABC):
         if self.replication_query_field:
             self.params[self.replication_query_field] = self.get_bookmark(state)
         if self.tap_stream_id == "happiness_ratings_report":
+            # start and end params filters out records based on ratingCreatedAt field
             self.params["start"] = self.get_bookmark(state)
             self.params["end"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         return '&'.join([f'{key}={value}' for (key, value) in self.params.items()])
