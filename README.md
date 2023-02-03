@@ -93,7 +93,7 @@ This tap:
   - Bookmark: modified_at (date-time)
 - Transformations: Fields camelCase to snake_case.
 
-[**happiness_ratings**](https://developer.helpscout.com/mailbox-api/endpoints/reports/happiness/reports-happiness-ratings/)
+[**happiness_ratings_report**](https://developer.helpscout.com/mailbox-api/endpoints/reports/happiness/reports-happiness-ratings/)
 - Endpoint: https://api.helpscout.net/v2/reports/happiness/ratings
 - Primary keys: thread_id, rating_created_at, conversation_id
 - Foreign keys: conversation_id(conversations), thread_id(conversation_threads), rating_customer_id(customers), rating_user_id(users)
@@ -107,6 +107,14 @@ This tap:
 - Foreign keys: None
 - Replication strategy: Incremental (query all, filter results)
   - Bookmark: updated_at (date-time)
+- Transformations: Fields camelCase to snake_case.
+
+[**team_members**](https://developer.helpscout.com/mailbox-api/endpoints/teams/list-team-members/)
+- Endpoint: https://api.helpscout.net/v2/teams/{team_id}/members
+- Primary keys: team_id, user_id
+- Foreign keys: team_id(teams), user_id(users)
+- Replication strategy: Full table (ALL for each parent Conversation)
+  - Bookmark: None
 - Transformations: Fields camelCase to snake_case.
 
 

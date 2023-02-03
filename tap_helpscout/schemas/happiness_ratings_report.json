@@ -6,7 +6,7 @@
       "type": ["null", "integer"]
     },
     "conversation_id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "thread_created_at": {
       "type": ["null", "string"],
@@ -19,7 +19,7 @@
       "type": ["null", "string"]
     },
     "rating_customer_id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "rating_customer_name": {
       "type": ["null", "string"]
@@ -28,7 +28,7 @@
       "type": ["null", "string"]
     },
     "rating_created_at": {
-      "type": ["null", "string"],
+      "type": ["string"],
       "format": "date-time"
     },
     "rating_user_id": {

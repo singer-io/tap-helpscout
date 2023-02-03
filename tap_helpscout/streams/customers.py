@@ -1,9 +1,7 @@
-from abc import ABC
-
 from .abstract import IncrementalStream
 
 
-class Customers(IncrementalStream, ABC):
+class Customers(IncrementalStream):
     """Class for `customers` stream"""
     stream = tap_stream_id = "customers"
     path = "/customers"
