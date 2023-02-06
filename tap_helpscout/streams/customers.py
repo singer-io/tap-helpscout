@@ -4,7 +4,8 @@ from .abstract import IncrementalStream
 
 
 class Customers(IncrementalStream, ABC):
-    """Class for `customers` stream"""
+    """Class for `customers` stream."""
+
     stream = tap_stream_id = "customers"
     path = "/customers"
     key_properties = ["id"]
@@ -13,8 +14,5 @@ class Customers(IncrementalStream, ABC):
     valid_replication_keys = ("updated_at",)
     replication_query_field = "modifiedSince"
     data_key = "customers"
-    params = {
-        "sortField": "modifiedAt",
-        "sortOrder": "asc"
-    }
+    params = {"sortField": "modifiedAt", "sortOrder": "asc"}
     is_child = False

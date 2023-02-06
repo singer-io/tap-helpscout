@@ -1,8 +1,10 @@
 import json
-from singer.catalog import Catalog
 from typing import Dict, Tuple
-from tap_helpscout.streams import STREAMS
+
+from singer.catalog import Catalog
+
 from tap_helpscout.helpers import get_abs_path
+from tap_helpscout.streams import STREAMS
 
 
 def get_schemas() -> Tuple[Dict, Dict]:
@@ -21,13 +23,19 @@ def get_schemas() -> Tuple[Dict, Dict]:
 
 
 def discover():
-    """Starts discover process"""
+    """Starts discover process."""
     schemas, schema_metadata = get_schemas()
     streams = []
 
     for schema_name, schema in schemas.items():
         schema_meta = schema_metadata[schema_name]
-        streams.append({"stream": schema_name, "tap_stream_id": schema_name,
-                        "key_properties": STREAMS[schema_name].key_properties,
-                        "schema": schema, "metadata": schema_meta})
+        streams.append(
+            {
+                "stream": schema_name,
+                "tap_stream_id": schema_name,
+                "key_properties": STREAMS[schema_name].key_properties,
+                "schema": schema,
+                "metadata": schema_meta,
+            }
+        )
     return Catalog.from_dict({"streams": streams})

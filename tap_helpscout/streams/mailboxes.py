@@ -4,7 +4,8 @@ from .abstract import IncrementalStream
 
 
 class MailBoxes(IncrementalStream, ABC):
-    """Class for `mailboxes` stream"""
+    """Class for `mailboxes` stream."""
+
     stream = tap_stream_id = "mailboxes"
     path = "/mailboxes"
     key_properties = ["id"]
