@@ -1,9 +1,7 @@
-from abc import ABC
-
 from .abstract import FullStream
 
 
-class MailBoxFields(FullStream, ABC):
+class MailBoxFields(FullStream):
     """Class for `mailbox_fields` stream"""
     stream = tap_stream_id = "mailbox_fields"
     path = "/mailboxes/{}/fields"

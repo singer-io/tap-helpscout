@@ -10,7 +10,7 @@ from tap_helpscout.helpers import parse_date
 logger = singer.get_logger()
 
 
-class BaseStream:
+class BaseStream(ABC):
     """Base class representing generic stream methods and meta-attributes."""
 
     @property
@@ -63,11 +63,6 @@ class BaseStream:
 
     @property
     @abstractmethod
-    def bookmark_value(self) -> str:
-        """Bookmark value for a given incremental stream"""
-
-    @property
-    @abstractmethod
     def child_streams(self) -> List:
         """Stores the list of child streams for a given parent stream"""
 
@@ -86,7 +81,6 @@ class BaseStream:
         """
 
     def __init__(self, client=None, start_date=None) -> None:
-        self._bookmark_value = None
         self.client = client
         self.start_date = start_date
 
@@ -192,21 +186,18 @@ class BaseStream:
         stream_metadata = to_list(stream_metadata)
         return stream_metadata
 
-    @bookmark_value.setter
-    def bookmark_value(self, value):
-        self._bookmark_value = value
 
-
-class IncrementalStream(BaseStream, ABC):
+class IncrementalStream(BaseStream):
     """Base class for Incremental table stream"""
     replication_method = "INCREMENTAL"
     forced_replication_method = "INCREMENTAL"
     params = {}
     replication_query_field = ""
     child_streams = []
+    parent = ""
 
 
-class FullStream(BaseStream, ABC):
+class FullStream(BaseStream):
     """Base class for Full table stream"""
     replication_method = "FULL_TABLE"
     forced_replication_method = "FULL_TABLE"
@@ -214,6 +205,8 @@ class FullStream(BaseStream, ABC):
     replication_query_field = ""
     valid_replication_keys = None
     params = {}
+    child_streams = []
+    parent = ""
 
 
 
