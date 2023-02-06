@@ -26,13 +26,13 @@ def main():
 
     with HelpScoutClient(parsed_args.config_path, parsed_args.config, parsed_args.dev) as helpscout_client:
 
-        state = parsed_args.state or {}
         if parsed_args.discover:
             do_discover()
-        elif parsed_args.catalog:
+        else:
+            state = parsed_args.state or {}
             sync(
                 client=helpscout_client,
-                catalog=parsed_args.catalog or discover().dump(),
+                catalog=parsed_args.catalog or discover(),
                 state=state or {},
                 start_date=parsed_args.config["start_date"],
             )
