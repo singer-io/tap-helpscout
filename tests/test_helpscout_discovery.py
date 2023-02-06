@@ -24,12 +24,12 @@ class DiscoveryTest(HelpscoutBaseTest):
         - Verify stream names follow naming convention streams should only have lowercase alphas and
          underscores.
         - Verify there is only 1 top level breadcrumb.
-        • Verify replication key(s).
-        • Verify primary key(s).
-        • Verify that if there is a replication key we are doing INCREMENTAL otherwise FULL.
-        • Verify the actual replication matches our expected replication method.
-        • Verify that primary, replication and foreign keys are given the inclusion of automatic.
-        • Verify that all other fields have inclusion of available metadata.
+        - Verify replication key(s).
+        - Verify primary key(s).
+        - Verify that if there is a replication key we are doing INCREMENTAL otherwise FULL.
+        - Verify the actual replication matches our expected replication method.
+        - Verify that primary, replication and foreign keys are given the inclusion of automatic.
+        - Verify that all other fields have inclusion of available metadata.
         """
 
         conn_id = connections.ensure_connection(self, payload_hook=self.preserve_refresh_token)

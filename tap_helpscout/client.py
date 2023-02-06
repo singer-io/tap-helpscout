@@ -49,6 +49,12 @@ class HelpScoutClient:
     def __exit__(self, exception_type, exception_value, traceback):
         self.__session.close()
 
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=(errors.Http500Error, errors.Http503Error, errors.Http504Error, errors.Http429Error),
+        max_tries=7,
+        factor=3,
+    )
     def get_access_token(self):
         """Generates access token required to send http requests."""
         # If tap is being executed in dev_mode then disable tap from creating new refresh and
