@@ -8,14 +8,14 @@ def get_abs_path(path: str):
 
 
 def parse_date(date_value):
-    """Pass in string-formatted-datetime, parse the value, and return it as an un-formatted
-     datetime object."""
+    """Pass in string-formatted-datetime, parse the value, and return it as an
+    un-formatted datetime object."""
     date_formats = {
         "%Y-%m-%dT%H:%M:%S.%fZ",
         "%Y-%m-%dT%H:%M:%SZ",
         "%Y-%m-%dT%H:%M:%S.%f+00:00",
         "%Y-%m-%dT%H:%M:%S+00:00",
-        "%Y-%m-%d"
+        "%Y-%m-%d",
     }
     for date_format in date_formats:
         try:

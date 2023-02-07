@@ -173,7 +173,7 @@ Record your `client_id`, `client_secret`, and the returned `refresh_token` into 
     > pip install singer-tools
     > pip install target-stitch
     > pip install target-json
-    
+
     ```
     - [singer-tools](https://github.com/singer-io/singer-tools)
     - [target-stitch](https://github.com/singer-io/target-stitch)
@@ -188,7 +188,7 @@ Record your `client_id`, `client_secret`, and the returned `refresh_token` into 
         "user_agent": "tap-helpscout <user@domain.com>"
     }
     ```
-    
+
     Optionally, also create a `state.json` file. `currently_syncing` is an optional attribute used for identifying the last object to be synced in case the job is interrupted mid-stream. The next run would begin where the last job left off.
 
     ```
@@ -233,7 +233,7 @@ Record your `client_id`, `client_secret`, and the returned `refresh_token` into 
     ```
 
 6. Test the Tap
-    
+
     While developing the HelpScout tap, the following utilities were run in accordance with Singer.io best practices:
     Pylint to improve [code quality](https://github.com/singer-io/getting-started/blob/master/docs/BEST_PRACTICES.md#code-quality):
     ```bash

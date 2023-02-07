@@ -24,5 +24,3 @@ STREAMS = {
     Users.tap_stream_id: Users,
     Workflows.tap_stream_id: Workflows
 }
-
-

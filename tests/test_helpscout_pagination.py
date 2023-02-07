@@ -1,9 +1,8 @@
-from tap_tester import connections, runner, LOGGER
-
 from base import HelpscoutBaseTest
+from tap_tester import LOGGER, connections, runner
+
 
 class PaginationTest(HelpscoutBaseTest):
-
     def name(self):
         return "tap_helpscout_tests_using_shared_token_chaining"
 
@@ -21,8 +20,9 @@ class PaginationTest(HelpscoutBaseTest):
         found_catalogs = self.run_and_verify_check_mode(conn_id)
 
         # table and field selection
-        test_catalogs_all_fields = [catalog for catalog in found_catalogs
-                                    if catalog.get('tap_stream_id') in streams_to_test]
+        test_catalogs_all_fields = [
+            catalog for catalog in found_catalogs if catalog.get("tap_stream_id") in streams_to_test
+        ]
         self.perform_and_verify_table_and_field_selection(conn_id, test_catalogs_all_fields, select_all_fields=True)
 
         # Run sync mode
@@ -35,25 +35,28 @@ class PaginationTest(HelpscoutBaseTest):
 
                 record_count = sync_record_count.get(stream, 0)
 
-                sync_messages = sync_records.get(stream, {'messages': []}).get('messages')
+                sync_messages = sync_records.get(stream, {"messages": []}).get("messages")
 
                 primary_keys = self.expected_primary_keys().get(stream)
 
                 # Verify the sync meets or exceeds the default record count
-                # for streams - users, workflows, mailboxes, mailbox_fields and mailbox_folders creating test data is a
-                # challenge in helpscout. So we will be excluding the above streams from this assertion
+                # for streams - users, workflows, mailboxes, mailbox_fields and mailbox_folders
+                # creating test data is a challenge in helpscout. So we will be excluding the above
+                # streams from this assertion
                 # Spike created to address this issue : TDL - 16378
 
                 if stream not in ('users','workflows','mailboxes','mailbox_fields','mailbox_folders','happiness_ratings_report', 'teams', 'team_members'):
                     stream_page_size = self.expected_page_limits()[stream]
                     self.assertLessEqual(stream_page_size, record_count)
 
-                # Verify there are no duplicates accross pages
-                records_pks_set = {tuple([message.get('data').get(primary_key)
-                                          for primary_key in primary_keys])
-                                   for message in sync_messages}
-                records_pks_list = [tuple([message.get('data').get(primary_key)
-                                           for primary_key in primary_keys])
-                                    for message in sync_messages]
+                # Verify there are no duplicates across pages
+                records_pks_set = {
+                    tuple(message.get("data").get(primary_key) for primary_key in primary_keys)
+                    for message in sync_messages
+                }
+                records_pks_list = [
+                    tuple(message.get("data").get(primary_key) for primary_key in primary_keys)
+                    for message in sync_messages
+                ]
 
                 self.assertCountEqual(records_pks_set, records_pks_list, msg=f"We have duplicate records for {stream}")

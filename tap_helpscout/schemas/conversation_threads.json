@@ -3,118 +3,217 @@
   "additionalProperties": false,
   "properties": {
     "id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "conversation_id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "type": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "status": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "state": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "action": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": false,
       "properties": {
         "type": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "text": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         }
       }
     },
     "body": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "source": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": false,
       "properties": {
         "type": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "via": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         }
       }
     },
     "customer": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "first": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "last": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "photo_url": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "email": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         }
       }
     },
     "created_by": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "type": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "first": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "last": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "photo_url": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "email": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         }
       }
     },
     "assigned_to": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "type": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "first": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "last": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "photo_url": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "email": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         }
       }
     },
     "saved_reply_id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "to": {
       "anyOf": [
@@ -156,11 +255,17 @@
       ]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "opened_at": {
-      "type": ["null", "string"],
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "attachments": {
@@ -172,22 +277,40 @@
             "additionalProperties": false,
             "properties": {
               "id": {
-                "type": ["null", "integer"]
+                "type": [
+                  "null",
+                  "integer"
+                ]
               },
               "filename": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               },
               "mime_type": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               },
               "width": {
-                "type": ["null", "integer"]
+                "type": [
+                  "null",
+                  "integer"
+                ]
               },
               "height": {
-                "type": ["null", "integer"]
+                "type": [
+                  "null",
+                  "integer"
+                ]
               },
               "size": {
-                "type": ["null", "integer"]
+                "type": [
+                  "null",
+                  "integer"
+                ]
               }
             }
           }

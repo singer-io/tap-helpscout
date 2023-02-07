@@ -3,48 +3,90 @@
   "additionalProperties": false,
   "properties": {
     "id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "first_name": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "last_name": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "gender": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "job_title": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "location": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "organization": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "photo_type": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "photo_url": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "age": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "background": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "address": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": false,
       "properties": {
         "lines": {
@@ -61,16 +103,28 @@
           ]
         },
         "city": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "state": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "postal_code": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "country": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         }
       }
     },
@@ -83,13 +137,22 @@
             "additionalProperties": false,
             "properties": {
               "id": {
-                "type": ["null", "integer"]
+                "type": [
+                  "null",
+                  "integer"
+                ]
               },
               "value": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               },
               "type": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               }
             }
           }
@@ -108,10 +171,16 @@
             "additionalProperties": false,
             "properties": {
               "id": {
-                "type": ["null", "integer"]
+                "type": [
+                  "null",
+                  "integer"
+                ]
               },
               "value": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               }
             }
           }
@@ -130,13 +199,56 @@
             "additionalProperties": false,
             "properties": {
               "id": {
-                "type": ["null", "integer"]
+                "type": [
+                  "null",
+                  "integer"
+                ]
               },
               "value": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               },
               "type": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "properties": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "name": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "value": {
+                "type": [
+                  "null",
+                  "string"
+                ]
               }
             }
           }
@@ -180,13 +292,22 @@
             "additionalProperties": false,
             "properties": {
               "id": {
-                "type": ["null", "integer"]
+                "type": [
+                  "null",
+                  "integer"
+                ]
               },
               "value": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               },
               "type": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               }
             }
           }
@@ -205,13 +326,22 @@
             "additionalProperties": false,
             "properties": {
               "id": {
-                "type": ["null", "integer"]
+                "type": [
+                  "null",
+                  "integer"
+                ]
               },
               "value": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               },
               "type": {
-                "type": ["null", "string"]
+                "type": [
+                  "null",
+                  "string"
+                ]
               }
             }
           }
