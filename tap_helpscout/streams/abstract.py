@@ -131,19 +131,20 @@ class BaseStream(ABC):
                 for record in self.get_records(state, parent_id):
                     if parent_id:
                         record[f"{self.parent}_id"] = parent_id
-                    record = transformer.transform(record, schema, stream_metadata)
+                    transformed_record = transformer.transform(record, schema, stream_metadata)
                     # Insert the parentId into each child record
-                    if self.replication_key and self.replication_key in record:
-                        record_bookmark = record[self.replication_key]
+                    if self.replication_key and self.replication_key in transformed_record:
+                        record_bookmark = transformed_record[self.replication_key]
                         if parse_date(record_bookmark) >= parse_date(current_bookmark):
-                            max_bookmark_value = record_bookmark
-                            singer.write_record(self.tap_stream_id, record)
+                            singer.write_record(self.tap_stream_id, transformed_record)
                             counter.increment()
+                            if parse_date(max_bookmark_value) < parse_date(record[self.replication_key]):
+                                max_bookmark_value = record[self.replication_key]
                             if is_parent:
                                 # Store the parent id to sync the child streams
                                 parent_ids.add(record["id"])
                     else:
-                        singer.write_record(self.tap_stream_id, record)
+                        singer.write_record(self.tap_stream_id, transformed_record)
                         counter.increment()
                 if self.replication_method == "INCREMENTAL":
                     self.write_bookmark(state, max_bookmark_value)
