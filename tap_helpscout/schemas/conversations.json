@@ -172,6 +172,10 @@
         "integer"
       ]
     },
+    "closed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "user_updated_at": {
       "type": [
         "null",
