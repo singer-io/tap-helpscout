@@ -1,4 +1,11 @@
 # Changelog
+
+## 1.1.1
+  * Makes replication keys as automatic fields [#37](https://github.com/singer-io/tap-helpscout/pull/37)
+  * Adds `properties` field to `customers` stream [#32](https://github.com/singer-io/tap-helpscout/pull/32)
+  * Adds `closed_at` field to `conversations` stream [#35](https://github.com/singer-io/tap-helpscout/pull/35)
+  * Code refactoring, Support for interrupted sync and unit-test cases [#37](https://github.com/singer-io/tap-helpscout/pull/37)
+
 ## 1.1.0
   * Adds support for dev mode [#30](https://github.com/singer-io/tap-helpscout/pull/30)
 
