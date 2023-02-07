@@ -4,7 +4,7 @@ from typing import Any, Dict, Mapping
 
 import backoff
 import requests
-from datetime import timezone
+
 from singer import metrics
 from . import exceptions as errors
 

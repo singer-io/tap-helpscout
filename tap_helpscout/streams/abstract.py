@@ -129,9 +129,9 @@ class BaseStream(ABC):
     def transform_records(self, data: Dict) -> List:
         """Transforms keys in extracted data"""
         if self.tap_stream_id == "happiness_ratings_report":
-            return transform_json(data, self.data_key, self.stream)[self.data_key]
+            return transform_json(data, self.data_key, self.tap_stream_id)[self.data_key]
         elif "_embedded" in data:
-            return transform_json(data["_embedded"], self.data_key, self.stream)[self.data_key]
+            return transform_json(data["_embedded"], self.data_key, self.tap_stream_id)[self.data_key]
         else:
             return []
 
