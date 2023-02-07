@@ -14,6 +14,11 @@ jobs:
             source /usr/local/share/virtualenvs/tap-helpscout/bin/activate
             pip install -U 'pip<19.2' 'setuptools<51.0.0'
             pip install .[dev]
+      - run:
+          name: 'pylint'
+          command: |
+            source /usr/local/share/virtualenvs/tap-helpscout/bin/activate
+            pylint tap_helpscout -d C,R,W
       - add_ssh_keys
       - run:
           name: 'JSON Validator'

@@ -1,21 +1,41 @@
-from singer import metadata
-from singer.catalog import Catalog, CatalogEntry, Schema
-from tap_helpscout.schema import get_schemas, STREAMS
+import json
+from typing import Dict, Tuple
+
+from singer.catalog import Catalog
+
+from tap_helpscout.helpers import get_abs_path
+from tap_helpscout.streams import STREAMS
+
+
+def get_schemas() -> Tuple[Dict, Dict]:
+    """Builds the singer schema and metadata dictionaries."""
+    streams, stream_metadata = {}, {}
+
+    for stream_name, stream in STREAMS.items():
+        schema_path = get_abs_path(f"schemas/{stream_name}.json")
+
+        with open(schema_path, encoding="utf-8") as file:
+            schema = json.load(file)
+
+        streams[stream_name], stream_metadata[stream_name] = schema, stream.get_metadata(schema)
+
+    return streams, stream_metadata
+
 
 def discover():
-    schemas, field_metadata = get_schemas()
-    catalog = Catalog([])
+    """Starts discover process."""
+    schemas, schema_metadata = get_schemas()
+    streams = []
 
-    for stream_name, schema_dict in schemas.items():
-        schema = Schema.from_dict(schema_dict)
-        mdata = field_metadata[stream_name]
-
-        catalog.streams.append(CatalogEntry(
-            stream=stream_name,
-            tap_stream_id=stream_name,
-            key_properties=STREAMS[stream_name]['key_properties'],
-            schema=schema,
-            metadata=mdata
-        ))
-
-    return catalog
+    for schema_name, schema in schemas.items():
+        schema_meta = schema_metadata[schema_name]
+        streams.append(
+            {
+                "stream": schema_name,
+                "tap_stream_id": schema_name,
+                "key_properties": STREAMS[schema_name].key_properties,
+                "schema": schema,
+                "metadata": schema_meta,
+            }
+        )
+    return Catalog.from_dict({"streams": streams})
