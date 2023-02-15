@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0
+  * Adds new streams `happiness_ratings_report`, `teams`, `team_members` [#34](https://github.com/singer-io/tap-helpscout/pull/34)
+
 ## 1.1.1
   * Makes replication keys as automatic fields [#37](https://github.com/singer-io/tap-helpscout/pull/37)
   * Adds `properties` field to `customers` stream [#32](https://github.com/singer-io/tap-helpscout/pull/32)
