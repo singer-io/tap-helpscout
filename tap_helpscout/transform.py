@@ -75,10 +75,38 @@ def transform_conversations(this_json, path=None):
     return this_json
 
 
+def transform_ratings(this_json, path):
+    if path is None:
+        return this_json
+
+    for record in this_json[path]:
+        if 'id' in record:
+            record["conversation_id"] = record["id"]
+            record.pop("id")
+
+        record["thread_id"] = record["threadid"]
+        record.pop("threadid")
+
+    return this_json
+
+
+def transform_team_users(this_json, path):
+    for record in this_json[path]:
+        record["user_id"] = record["id"]
+
+    return this_json
+
+
 # Run all transforms: de-nests _embedded, removes _embedded/_links, and
 # Converts camelCase to snake_case for field_name keys.
-def transform_json(this_json, path):
+def transform_json(this_json, path, stream_name):
     de_nested_json = denest_embedded_nodes(this_json, path)
     no_links_json = remove_embedded_links(de_nested_json)
     converted_json = convert_json(no_links_json)
-    return transform_conversations(converted_json, path) if path == "conversations" else converted_json
+    if stream_name == "conversations":
+        return transform_conversations(converted_json, path)
+    elif stream_name == "happiness_ratings_report":
+        return transform_ratings(converted_json, path)
+    elif stream_name == "team_members":
+        return transform_team_users(converted_json, path)
+    return converted_json

@@ -84,6 +84,11 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.REPLICATION_KEYS: {"updated_at"},
                 self.EXPECTED_PAGE_SIZE: 50,
             },
+            "happiness_ratings_report": {
+                self.PRIMARY_KEYS: {"rating_customer_id", "conversation_id", "rating_created_at"},
+                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.EXPECTED_PAGE_SIZE: 100
+            },
             "mailboxes": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
@@ -100,6 +105,17 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {"updated_at"},
                 self.EXPECTED_PAGE_SIZE: 50,
+            },
+            "teams": {
+                self.PRIMARY_KEYS: {"id"},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {"updated_at"},
+                self.EXPECTED_PAGE_SIZE: 50
+            },
+            "team_members": {
+                self.PRIMARY_KEYS: {"team_id", "user_id"},
+                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.EXPECTED_PAGE_SIZE: 50
             },
             "users": {
                 self.PRIMARY_KEYS: {"id"},
@@ -132,6 +148,15 @@ class HelpscoutBaseTest(unittest.TestCase):
         return {
             table: properties.get(self.FOREIGN_KEYS, set()) for table, properties in self.expected_metadata().items()
         }
+
+    def expected_foreign_keys(self):
+       """
+       return a dictionary with key of table name
+       and value as a set of foregin key fields
+       """
+       return {table: properties.get(self.FOREIGN_KEYS, set())
+               for table, properties
+               in self.expected_metadata().items()}
 
     def expected_replication_keys(self):
         """return a dictionary with key of table name and value as a set of

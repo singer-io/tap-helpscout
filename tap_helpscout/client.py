@@ -4,8 +4,8 @@ from typing import Any, Dict, Mapping
 
 import backoff
 import requests
-from singer import metrics
 
+from singer import metrics
 from . import exceptions as errors
 
 

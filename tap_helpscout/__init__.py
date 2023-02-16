@@ -26,6 +26,7 @@ def main():
 
     with HelpScoutClient(parsed_args.config_path, parsed_args.config, parsed_args.dev) as helpscout_client:
 
+        state = parsed_args.state or {}
         if parsed_args.discover:
             do_discover()
         else:

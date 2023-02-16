@@ -70,6 +70,8 @@ class AllFieldsTest(HelpscoutBaseTest):
                 self.assertGreater(sync_record_count.get(stream), 0)
 
                 # Verify that more than just the automatic fields are replicated for each stream
+                self.assertTrue(expected_automatic_fields.issubset(actual_all_fields),
+                                msg=f'{expected_automatic_fields-actual_all_fields} is not in "expected_all_keys"')
                 self.assertTrue(
                     expected_automatic_fields.issubset(actual_all_fields),
                     msg=f'{expected_automatic_fields-actual_all_fields} is not in "expected_all_keys"',

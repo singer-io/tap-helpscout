@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Iterator, List, Set, Tuple
+from datetime import datetime, timezone
 
 import singer
 from singer import Transformer, metrics, write_state
@@ -100,30 +101,44 @@ class BaseStream(ABC):
         """Generates request params required to send an API request."""
         if self.replication_query_field:
             self.params[self.replication_query_field] = self.get_bookmark(state)
-        return "&".join([f"{key}={value}" for (key, value) in self.params.items()])
+        if self.tap_stream_id == "happiness_ratings_report":
+            # start and end params filters out records based on ratingCreatedAt field
+            self.params["start"] = self.get_bookmark(state)
+            self.params["end"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return '&'.join([f'{key}={value}' for (key, value) in self.params.items()])
 
     def get_records(self, state: Dict, parent_id=None) -> Iterator[Dict]:
-        """Retrieves records from API as paginated streams."""
+        """Retrieves records from API as paginated streams"""
         page = total_pages = 1
         path = self.path.format(parent_id) if parent_id else self.path
         query_string = self.make_request_params(state)
         while page <= total_pages:
             query_string_tmp = f"{query_string}&page={page}"
-            logger.info(f"URL for {self.tap_stream_id}: https://api.helpscout.net/v2{path}?" f"{query_string_tmp}")
+            logger.info(f'URL for {self.tap_stream_id}: https://api.helpscout.net/v2{path}?'
+                        f'{query_string_tmp}')
             data = self.client.get(path, params=query_string_tmp, endpoint=self.tap_stream_id)
             yield from self.transform_records(data)
-            page = data["page"]["number"]
-            total_pages = data["page"]["totalPages"]
+            page = data["page"] if self.tap_stream_id == "happiness_ratings_report" else \
+                data["page"]["number"]
+            total_pages = data["pages"] if self.tap_stream_id == "happiness_ratings_report" else \
+                data["page"]["totalPages"]
             if page == 0:
                 break
             page += 1
 
     def transform_records(self, data: Dict) -> List:
-        """Transforms keys in extracted data."""
-        return transform_json(data["_embedded"], self.data_key)[self.data_key] if "_embedded" in data else []
+        """Transforms keys in extracted data"""
+        if self.tap_stream_id == "happiness_ratings_report":
+            return transform_json(data, self.data_key, self.tap_stream_id)[self.data_key]
+        elif "_embedded" in data:
+            return transform_json(data["_embedded"], self.data_key, self.tap_stream_id)[self.data_key]
+        else:
+            return []
 
-    def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False, parent_id=None) -> Set:
-        """Processes and writes transformed data."""
+    def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False,
+                        parent_id=None) -> Set:
+        """Processes and writes transformed data"""
+
         parent_ids = set()
         current_bookmark = max_bookmark_value = self.get_bookmark(state)
         with Transformer() as transformer:

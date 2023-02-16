@@ -73,6 +73,10 @@ class DiscoveryTest(HelpscoutBaseTest):
                 actual_primary_keys = set(
                     stream_properties[0].get("metadata", {self.PRIMARY_KEYS: []}).get(self.PRIMARY_KEYS, [])
                 )
+                actual_foreign_keys = set(
+                    stream_properties[0].get(
+                        "metadata", {self.FOREIGN_KEYS: []}).get(self.FOREIGN_KEYS, [])
+                )
                 actual_replication_keys = set(
                     stream_properties[0].get("metadata", {self.REPLICATION_KEYS: []}).get(self.REPLICATION_KEYS, [])
                 )

@@ -4,6 +4,7 @@ from base import HelpscoutBaseTest
 from tap_tester import LOGGER, connections, runner
 
 
+
 class AutomaticFieldsTest(HelpscoutBaseTest):
     def name(self):
         return "tap_helpscout_tests_using_shared_token_chaining"

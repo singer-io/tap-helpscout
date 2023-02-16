@@ -3,6 +3,7 @@ from .abstract import IncrementalStream
 
 class MailBoxFolders(IncrementalStream):
     """Class for `mailbox_folders` stream."""
+
     stream = tap_stream_id = "mailbox_folders"
     path = "/mailboxes/{}/folders"
     key_properties = ["id"]
