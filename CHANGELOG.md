@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.1
+  * Dependabot update [#38](https://github.com/singer-io/tap-helpscout/pull/38)
+
 ## 1.2.0
   * Adds new streams `happiness_ratings_report`, `teams`, `team_members` [#34](https://github.com/singer-io/tap-helpscout/pull/34)
 
