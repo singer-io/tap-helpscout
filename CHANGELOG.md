@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.1
+* Dependency upgrades [#40](https://github.com/singer-io/tap-helpscout/pull/40)
+
 ## 1.2.0
   * Adds new streams `happiness_ratings_report`, `teams`, `team_members` [#34](https://github.com/singer-io/tap-helpscout/pull/34)
 
