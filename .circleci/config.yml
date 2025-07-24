@@ -12,8 +12,8 @@ jobs:
           command: |
             uv venv --python=3.9 /usr/local/share/virtualenvs/tap-helpscout
             source /usr/local/share/virtualenvs/tap-helpscout/bin/activate
-            pip install -U 'pip<19.2' 'setuptools<51.0.0'
-            pip install .[dev]
+            uv pip install -U 'pip<19.2' 'setuptools<51.0.0'
+            uv pip install .[dev]
       - run:
           name: 'pylint'
           command: |
@@ -29,7 +29,7 @@ jobs:
           name: 'Unit Tests'
           command: |
             source /usr/local/share/virtualenvs/tap-helpscout/bin/activate
-            pip install nose coverage
+            uv pip install nose coverage
             nosetests --with-coverage --cover-erase --cover-package=tap_helpscout --cover-html-dir=htmlcov tests/unittests
             coverage html
       - run:
