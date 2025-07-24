@@ -10,7 +10,7 @@ jobs:
       - run:
           name: 'Setup virtual env'
           command: |
-            python3 -m venv /usr/local/share/virtualenvs/tap-helpscout
+            uv venv --python=3.9 /usr/local/share/virtualenvs/tap-helpscout
             source /usr/local/share/virtualenvs/tap-helpscout/bin/activate
             pip install -U 'pip<19.2' 'setuptools<51.0.0'
             pip install .[dev]
