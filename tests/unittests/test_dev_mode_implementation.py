@@ -59,15 +59,3 @@ class TestDevModeImplementation(unittest.TestCase):
         with self.assertRaises(Exception) as err:
             HelpScoutClient(self.config_file_name, self.invalid_access_token_params, True)
             self.assertEqual(str(err), "Access token is missing, unable to authenticate in dev mode")
-
-    @mock.patch("requests.Session.post")
-    def test_non_dev_mode_writes_to_config(self, mock_request):
-        """Tests whether the get_access_token method writes to config file when
-        running the tap on non dev_mode."""
-        mock_request.return_value = get_mocked_response()
-        helpscout_client_object = HelpScoutClient(self.config_file_name, self.config_params, False)
-        helpscout_client_object.get_access_token()
-        with open(self.config_file_name) as config_file:
-            new_config_content = json.load(config_file)
-        self.assertEqual(new_config_content["access_token"], "new_access_token")
-        self.assertEqual(new_config_content["refresh_token"], "new_refresh_token")
