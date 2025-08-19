@@ -77,9 +77,10 @@ class HelpScoutClient:
             url="https://api.helpscout.net/v2/oauth2/token",
             headers=headers,
             data={
-                "grant_type": "client_credentials",
+                "grant_type": "refresh_token",
                 "client_id": self.__client_id,
                 "client_secret": self.__client_secret,
+                "refresh_token": self.__refresh_token,
             },
         )
 
@@ -89,6 +90,15 @@ class HelpScoutClient:
         data = response.json()
 
         self.__access_token = data["access_token"]
+        self.__refresh_token = data["refresh_token"]
+
+        # Refresh token rotates on every re-auth
+        with open(self.__config_path) as file:
+            config = json.load(file)
+        config["refresh_token"] = self.__refresh_token
+        config["access_token"] = self.__access_token
+        with open(self.__config_path, "w") as file:
+            json.dump(config, file, indent=2)
 
         expires_seconds = data["expires_in"] - 60  # pad by 60 seconds
         self.__expires = datetime.now(timezone.utc) + timedelta(seconds=expires_seconds)
