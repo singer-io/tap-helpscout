@@ -99,12 +99,14 @@ class HelpscoutBaseTest(unittest.TestCase):
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
                 self.EXPECTED_PAGE_SIZE: 50,
+                self.EXPECTED_PARENT_STREAM: "mailboxes",
             },
             "mailbox_folders": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {"updated_at"},
                 self.EXPECTED_PAGE_SIZE: 50,
+                self.EXPECTED_PARENT_STREAM: "mailboxes",
             },
             "teams": {
                 self.PRIMARY_KEYS: {"id"},
@@ -115,7 +117,8 @@ class HelpscoutBaseTest(unittest.TestCase):
             "team_members": {
                 self.PRIMARY_KEYS: {"team_id", "user_id"},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
-                self.EXPECTED_PAGE_SIZE: 50
+                self.EXPECTED_PAGE_SIZE: 50,
+                self.EXPECTED_PARENT_STREAM: "teams",
             },
             "users": {
                 self.PRIMARY_KEYS: {"id"},

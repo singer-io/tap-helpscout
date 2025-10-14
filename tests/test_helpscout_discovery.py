@@ -83,11 +83,19 @@ class DiscoveryTest(HelpscoutBaseTest):
                 actual_replication_method = (
                     stream_properties[0].get("metadata", {self.REPLICATION_METHOD: None}).get(self.REPLICATION_METHOD)
                 )
+                
+                # Verify forced-replication-method is present 
+                actual_forced_replication_method = stream_properties[0].get("metadata", {}).get("forced-replication-method")
                 actual_automatic_fields = {
                     item.get("breadcrumb", ["properties", None])[1]
                     for item in metadata
                     if item.get("metadata").get("inclusion") == "automatic"
                 }
+                
+                # Get parent-tap-stream-id if present
+                actual_parent_stream_id = stream_properties[0].get("metadata", {}).get("parent-tap-stream-id")
+                
+                expected_parent_stream = self.expected_metadata().get(stream, {}).get(self.EXPECTED_PARENT_STREAM)
 
                 ##########################################################################
                 # metadata assertions
@@ -115,6 +123,29 @@ class DiscoveryTest(HelpscoutBaseTest):
                     msg=f"expected replication method is {expected_replication_method}"
                     f" but actual replication method is {actual_replication_method}",
                 )
+
+                # verify forced-replication-method matches expected value
+                self.assertEqual(
+                    expected_replication_method,
+                    actual_forced_replication_method,
+                    msg=f"expected forced-replication-method is {expected_replication_method}"
+                    f" but actual forced-replication-method is {actual_forced_replication_method}",
+                )
+
+                # verify parent-tap-stream-id for child streams
+                if expected_parent_stream:
+                    self.assertEqual(
+                        expected_parent_stream,
+                        actual_parent_stream_id,
+                        msg=f"expected parent-tap-stream-id is {expected_parent_stream}"
+                        f" but actual parent-tap-stream-id is {actual_parent_stream_id}",
+                    )
+                else:
+                    self.assertIsNone(
+                        actual_parent_stream_id,
+                        msg=f"parent-tap-stream-id should be None for parent stream {stream}"
+                        f" but got {actual_parent_stream_id}",
+                    )
 
                 # Verify replication key is present for any stream with replication
                 # method = INCREMENTAL
