@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.0
+  * Adds parent-tap-stream-id field to catalog for child streams [#42](https://github.com/singer-io/tap-helpscout/pull/42)
+
 ## 1.2.1
 * Dependency upgrades [#40](https://github.com/singer-io/tap-helpscout/pull/40)
 
