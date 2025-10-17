@@ -23,6 +23,7 @@ class HelpscoutBaseTest(unittest.TestCase):
     PRIMARY_KEYS = "table-key-properties"
     FOREIGN_KEYS = "table-foreign-key-properties"
     REPLICATION_METHOD = "forced-replication-method"
+    PARENT_TAP_STREAM_ID = "parent-tap-stream-id"
     API_LIMIT = 400
     INCREMENTAL = "INCREMENTAL"
     FULL_TABLE = "FULL_TABLE"
