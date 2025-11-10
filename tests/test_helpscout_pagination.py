@@ -47,7 +47,7 @@ class PaginationTest(HelpscoutBaseTest):
 
                 if stream not in ('users','workflows','mailboxes','mailbox_fields','mailbox_folders','happiness_ratings_report', 'teams', 'team_members'):
                     stream_page_size = self.expected_page_limits()[stream]
-                    self.assertLessEqual(stream_page_size, record_count)
+                    self.assertLessEqual(record_count, stream_page_size)
 
                 # Verify there are no duplicates across pages
                 records_pks_set = {
