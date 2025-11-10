@@ -29,8 +29,8 @@ jobs:
           name: 'Unit Tests'
           command: |
             source /usr/local/share/virtualenvs/tap-helpscout/bin/activate
-            uv pip install nose coverage
-            nosetests --with-coverage --cover-erase --cover-package=tap_helpscout --cover-html-dir=htmlcov tests/unittests
+            uv pip install pytest coverage
+            coverage run -m pytest tests/unittests
             coverage html
       - run:
           name: 'Integration Tests'
