@@ -24,7 +24,7 @@ class TransformMethods(unittest.TestCase):
             "camel_case_key": "UnitTest",
             "snake_case_keys": [{"first_name": "tester", "second_name": "dev"}],
         }
-        self.assertEquals(transform.convert_json(input_json), expected_output)
+        self.assertEqual(transform.convert_json(input_json), expected_output)
 
     def test_denest_embedded_nodes(self):
         """Tests transform_json"""
@@ -51,5 +51,5 @@ class TransformMethods(unittest.TestCase):
                                                               "/test-user-11122330b",
                                                   "facebook": "https://www.fb.com/12345"}}]}
 
-        self.assertEquals(transform.transform_json(mock_input, "conversations", "conversations"),
-                          expected_output)
+        self.assertEqual(transform.transform_json(mock_input, "conversations", "conversations"),
+                         expected_output)
