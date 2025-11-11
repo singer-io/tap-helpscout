@@ -112,6 +112,7 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
                 # Get record counts
                 full_sync_record_count = len(first_sync_stream_records)
                 interrupted_record_count = len(post_interrupted_sync_stream_records)
+                full_records_primary_keys = [x[primary_key] for x in first_sync_stream_records]
 
                 if replication_method == self.INCREMENTAL:
                     # Final bookmark after interrupted sync
@@ -125,9 +126,6 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
                     # Assign the start date to the interrupted stream
                     interrupted_stream_datetime = self.parse_date(interrupted_sync_state["bookmarks"][stream])
                     primary_key = self.expected_primary_keys()[stream].pop()
-
-                    # Get primary keys of 1st sync records
-                    full_records_primary_keys = [x[primary_key] for x in first_sync_stream_records]
 
                     for record in post_interrupted_sync_stream_records:
                         record_time = self.parse_date(record.get(list(replication_key)[0]))
@@ -187,7 +185,7 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
                             # Verify resuming sync replicates all records that were found in the full
                             # sync (non-interrupted)
                             self.assertIn(
-                                record, first_sync_stream_records, msg="Unexpected record replicated in resuming sync."
+                                record[primary_key], full_records_primary_keys, msg="Unexpected record replicated in resuming sync."
                             )
                     else:
                         # BUG: TDL-21675: interrupted sync does not sync already synced streams
