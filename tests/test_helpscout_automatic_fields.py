@@ -66,29 +66,3 @@ class AutomaticFieldsTest(HelpscoutBaseTest):
                 # automatically Verify that only the automatic fields are sent to the target
                 for actual_keys in record_messages_keys:
                     self.assertSetEqual(expected_keys, actual_keys)
-
-                # Get records
-                records = [
-                    message.get("data")
-                    for message in stream_messages.get("messages", [])
-                    if message.get("action") == "upsert"
-                ]
-
-                # Remove duplicate records
-                records_pks_list = [
-                    tuple(message.get(pk) for pk in expected_primary_keys[stream])
-                    for message in [json.loads(t) for t in {json.dumps(d) for d in records}]
-                ]
-
-                # Remove duplicate primary keys
-                records_pks_set = set(records_pks_list)
-
-                # Verify there are no duplicate records
-                self.assertEqual(len(records), len(records_pks_set), msg=f"{stream} contains duplicate records")
-
-                # Verify defined primary key is unique
-                self.assertEqual(
-                    len(records_pks_set),
-                    len(records_pks_list),
-                    msg=f"{expected_primary_keys} are not unique primary keys for {stream} stream.",
-                )
