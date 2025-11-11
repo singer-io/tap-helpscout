@@ -112,6 +112,7 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
                 # Get record counts
                 full_sync_record_count = len(first_sync_stream_records)
                 interrupted_record_count = len(post_interrupted_sync_stream_records)
+                primary_key = self.expected_primary_keys()[stream].pop()
                 full_records_primary_keys = [x[primary_key] for x in first_sync_stream_records]
 
                 if replication_method == self.INCREMENTAL:
@@ -125,7 +126,6 @@ class HelpscoutInterruptedSyncTest(HelpscoutBaseTest):
                 if stream == interrupted_sync_state["currently_syncing"]:
                     # Assign the start date to the interrupted stream
                     interrupted_stream_datetime = self.parse_date(interrupted_sync_state["bookmarks"][stream])
-                    primary_key = self.expected_primary_keys()[stream].pop()
 
                     for record in post_interrupted_sync_stream_records:
                         record_time = self.parse_date(record.get(list(replication_key)[0]))
