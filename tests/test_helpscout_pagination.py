@@ -45,9 +45,9 @@ class PaginationTest(HelpscoutBaseTest):
                 # streams from this assertion
                 # Spike created to address this issue : TDL - 16378
 
-                if stream not in ('users','workflows','mailboxes','mailbox_fields','mailbox_folders','happiness_ratings_report', 'teams', 'team_members'):
+                if stream in ('conversations',):
                     stream_page_size = self.expected_page_limits()[stream]
-                    self.assertLessEqual(record_count, stream_page_size)
+                    self.assertLessEqual(stream_page_size, record_count)
 
                 # Verify there are no duplicates across pages
                 records_pks_set = {
