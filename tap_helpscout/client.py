@@ -5,9 +5,10 @@ from typing import Any, Dict, Mapping
 import backoff
 import requests
 
-from singer import metrics
+from singer import metrics, get_logger
 from . import exceptions as errors
 
+LOGGER = get_logger()
 
 def raise_for_error(response: requests.Response) -> None:
     """Raises the associated response exception.
@@ -20,8 +21,9 @@ def raise_for_error(response: requests.Response) -> None:
     except (requests.HTTPError, requests.ConnectionError) as _:
         try:
             error_code = response.status_code
+            LOGGER.error(response.json())
             client_exception = getattr(
-                errors, f"Http{error_code}Error"(message=str(response.json())), errors.HttpClientException(message="Undefined " "Exception")
+                errors, f"Http{error_code}Error", errors.HttpClientException(message="Undefined " "Exception")
             )
             raise client_exception from None
         except (ValueError, TypeError, AttributeError):
