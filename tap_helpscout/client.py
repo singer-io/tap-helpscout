@@ -21,7 +21,7 @@ def raise_for_error(response: requests.Response) -> None:
         try:
             error_code = response.status_code
             client_exception = getattr(
-                errors, f"Http{error_code}Error", errors.HttpClientException(message="Undefined " "Exception")
+                errors, f"Http{error_code}Error"(message=str(response.json())), errors.HttpClientException(message="Undefined " "Exception")
             )
             raise client_exception from None
         except (ValueError, TypeError, AttributeError):
