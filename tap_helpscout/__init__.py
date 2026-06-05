@@ -10,10 +10,10 @@ LOGGER = singer.get_logger()
 REQUIRED_CONFIG_KEYS = ["client_id", "client_secret", "refresh_token", "user_agent"]
 
 
-def do_discover():
-    """Starts discovery process."""
+def do_discover(client):
+    """Starts discovery process, excluding streams the credentials cannot access."""
     LOGGER.info("Starting discover")
-    catalog = discover()
+    catalog = discover(client)
     catalog.dump()
     LOGGER.info("Finished discover")
 
@@ -28,12 +28,12 @@ def main():
 
         state = parsed_args.state or {}
         if parsed_args.discover:
-            do_discover()
+            do_discover(helpscout_client)
         else:
             state = parsed_args.state or {}
             sync(
                 client=helpscout_client,
-                catalog=parsed_args.catalog or discover(),
+                catalog=parsed_args.catalog or discover(helpscout_client),
                 state=state or {},
                 start_date=parsed_args.config["start_date"],
             )

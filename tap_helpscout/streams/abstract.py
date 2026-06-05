@@ -7,6 +7,7 @@ from singer import Transformer, metrics, write_state
 from singer.bookmarks import ensure_bookmark_path
 from singer.metadata import get_standard_metadata, to_list, to_map, write
 
+from tap_helpscout.exceptions import Http403Error
 from tap_helpscout.helpers import parse_date
 from tap_helpscout.transform import transform_json
 
@@ -86,6 +87,29 @@ class BaseStream(ABC):
     def __init__(self, client=None, start_date=None) -> None:
         self.client = client
         self.start_date = start_date
+
+    def check_access(self, state=None) -> bool:
+        """Verify that the API credentials have read access to this stream.
+
+        Returns True if accessible, False if a HTTPClientException is raised.
+        Child streams always return True (access is governed by the parent check).
+        """
+        if self.parent:
+            return True
+        if not state:
+            state = {}
+
+        params = self.make_request_params(state)
+        logger.info("Checking access for stream '{}'".format(self.tap_stream_id))
+        try:
+            self.client.get(self.path, params=params)
+            return True
+        except Http403Error:
+            logger.warning(
+                "Stream '%s' does not have read permission, excluding from catalog.",
+                self.tap_stream_id,
+            )
+            return False
 
     def get_bookmark(self, state: Dict) -> str:
         """Retrieves bookmark value for a given stream from state file."""

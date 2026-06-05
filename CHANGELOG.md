@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.0
+* Exclude un-authorised streams from catalog during discovery. [#43](https://github.com/singer-io/tap-helpscout/pull/43)
+
 ## 1.2.1
 * Dependency upgrades [#40](https://github.com/singer-io/tap-helpscout/pull/40)
 
