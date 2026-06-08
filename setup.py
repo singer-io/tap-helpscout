@@ -9,7 +9,10 @@ setup(
     author="jeff.huth@bytecode.io",
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     py_modules=["tap_helpscout"],
-    install_requires=["backoff==1.10.0", "requests==2.32.4", "singer-python==5.13.2"],
+    install_requires=[
+        "backoff==1.10.0",
+        "requests==2.33.0",
+        "singer-python==5.19.0"],
     extras_require={
         "dev": [
             "ipdb",
