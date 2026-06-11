@@ -9,3 +9,4 @@ class TeamMembers(FullStream):
     data_key = "users"
     is_child = True
     parent = "teams"
+    parent_id_field = "team_id"

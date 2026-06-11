@@ -9,3 +9,4 @@ class MailBoxFields(FullStream):
     data_key = "fields"
     is_child = True
     parent = "mailboxes"
+    parent_id_field = "mailbox_id"

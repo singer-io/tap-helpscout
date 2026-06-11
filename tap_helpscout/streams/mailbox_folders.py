@@ -13,3 +13,4 @@ class MailBoxFolders(IncrementalStream):
     data_key = "folders"
     is_child = True
     parent = "mailboxes"
+    parent_id_field = "mailbox_id"

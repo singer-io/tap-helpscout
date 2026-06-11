@@ -145,7 +145,7 @@ class BaseStream(ABC):
             with metrics.record_counter(self.tap_stream_id) as counter:
                 for record in self.get_records(state, parent_id):
                     if parent_id:
-                        record[f"{self.parent}_id"] = parent_id
+                        record[self.parent_id_field] = parent_id
                     transformed_record = transformer.transform(record, schema, stream_metadata)
                     # Insert the parentId into each child record
                     if self.replication_key and self.replication_key in transformed_record:
@@ -212,6 +212,7 @@ class IncrementalStream(BaseStream):
     replication_query_field = ""
     child_streams = []
     parent = ""
+    parent_id_field = ""
 
 
 class FullStream(BaseStream):
@@ -224,3 +225,4 @@ class FullStream(BaseStream):
     params = {}
     child_streams = []
     parent = ""
+    parent_id_field = ""

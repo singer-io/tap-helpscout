@@ -9,3 +9,4 @@ class ConversationThreads(FullStream):
     data_key = "threads"
     is_child = True
     parent = "conversations"
+    parent_id_field = "conversation_id"
