@@ -83,6 +83,8 @@ class BaseStream(ABC):
         order to allow for sources that have duplicate stream names.
         """
 
+    parent_id_field = ""
+
     def __init__(self, client=None, start_date=None) -> None:
         self.client = client
         self.start_date = start_date
