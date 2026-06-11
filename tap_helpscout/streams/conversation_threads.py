@@ -8,4 +8,4 @@ class ConversationThreads(FullStream):
     key_properties = ["id"]
     data_key = "threads"
     is_child = True
-    parent = "conversation"
+    parent = "conversations"
