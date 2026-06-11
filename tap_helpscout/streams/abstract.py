@@ -91,7 +91,7 @@ class BaseStream(ABC):
     def check_access(self, state=None) -> bool:
         """Verify that the API credentials have read access to this stream.
 
-        Returns True if accessible, False if a HTTPClientException is raised.
+        Returns True if accessible, False when a Http403Error is raised.
         Child streams always return True (access is governed by the parent check).
         """
         if self.parent:
