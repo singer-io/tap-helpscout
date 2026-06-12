@@ -8,4 +8,5 @@ class TeamMembers(FullStream):
     key_properties = ["team_id", "user_id"]
     data_key = "users"
     is_child = True
-    parent = "team"
+    parent = "teams"
+    parent_id_field = "team_id"
