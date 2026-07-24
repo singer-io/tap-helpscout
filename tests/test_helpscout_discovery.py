@@ -88,6 +88,11 @@ class DiscoveryTest(HelpscoutBaseTest):
                     for item in metadata
                     if item.get("metadata").get("inclusion") == "automatic"
                 }
+                
+                # Get parent-tap-stream-id if present
+                actual_parent_stream_id = stream_properties[0].get("metadata", {}).get(self.PARENT_TAP_STREAM_ID)
+                
+                expected_parent_stream = self.expected_metadata().get(stream, {}).get(self.EXPECTED_PARENT_STREAM)
 
                 ##########################################################################
                 # metadata assertions
@@ -115,6 +120,21 @@ class DiscoveryTest(HelpscoutBaseTest):
                     msg=f"expected replication method is {expected_replication_method}"
                     f" but actual replication method is {actual_replication_method}",
                 )
+
+                # verify parent-tap-stream-id for child streams
+                if expected_parent_stream:
+                    self.assertEqual(
+                        expected_parent_stream,
+                        actual_parent_stream_id,
+                        msg=f"expected {self.PARENT_TAP_STREAM_ID} is {expected_parent_stream}"
+                        f" but actual {self.PARENT_TAP_STREAM_ID} is {actual_parent_stream_id}",
+                    )
+                else:
+                    self.assertIsNone(
+                        actual_parent_stream_id,
+                        msg=f"{self.PARENT_TAP_STREAM_ID} should be None for parent stream {stream}"
+                        f" but got {actual_parent_stream_id}",
+                    )
 
                 # Verify replication key is present for any stream with replication
                 # method = INCREMENTAL
