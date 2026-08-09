@@ -1,6 +1,6 @@
 # TODO setup default tap-tester slack orb
 # TODO create a card to add pylint
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
