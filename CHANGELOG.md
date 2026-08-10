@@ -1,12 +1,9 @@
 # Changelog
 
-## 1.4.0
-* Exclude un-authorised streams from catalog during discovery. [#47](https://github.com/singer-io/tap-helpscout/pull/47)
-
 ## 1.3.0
-* Adds parent-tap-stream-id field to catalog for child streams [#42](https://github.com/singer-io/tap-helpscout/pull/42)
+  * Adds parent-tap-stream-id field to catalog for child streams [#42](https://github.com/singer-io/tap-helpscout/pull/42)
 
-## 1.2.2
+# 1.2.2
   * Bump requests to 2.33.0 for security updates [#46](https://github.com/singer-io/tap-helpscout/pull/46)
 
 ## 1.2.1
