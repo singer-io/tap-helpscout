@@ -17,6 +17,8 @@ logger = singer.get_logger()
 class BaseStream(ABC):
     """Base class representing generic stream methods and meta-attributes."""
 
+    parent_id_field = ""
+
     @property
     @abstractmethod
     def replication_method(self) -> str:
@@ -84,8 +86,6 @@ class BaseStream(ABC):
         order to allow for sources that have duplicate stream names.
         """
 
-    parent_id_field = ""
-
     def __init__(self, client=None, start_date=None) -> None:
         self.client = client
         self.start_date = start_date
@@ -106,10 +106,11 @@ class BaseStream(ABC):
         try:
             self.client.get(self.path, params=params)
             return True
-        except Http403Error:
+        except Http403Error as err:
             logger.warning(
-                "Stream '%s' does not have read permission, excluding from catalog.",
+                "Unauthorized Stream: %s, excluding from catalog. HTTP-Error-Message: '%s'",
                 self.tap_stream_id,
+                str(err)
             )
             return False
 
@@ -238,7 +239,6 @@ class IncrementalStream(BaseStream):
     replication_query_field = ""
     child_streams = []
     parent = ""
-    parent_id_field = ""
 
 
 class FullStream(BaseStream):
@@ -251,4 +251,3 @@ class FullStream(BaseStream):
     params = {}
     child_streams = []
     parent = ""
-    parent_id_field = ""

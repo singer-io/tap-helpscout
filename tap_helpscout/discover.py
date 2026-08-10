@@ -85,8 +85,7 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict) -> None:
 
     if inaccessible_streams:
         LOGGER.warning(
-            "The account credentials supplied do not have 'read' access to the following "
-            "stream(s): %s. These streams have been excluded from the catalog.",
+            "Unauthorized streams excluded from catalog: %s",
             ", ".join(inaccessible_streams),
         )
 
