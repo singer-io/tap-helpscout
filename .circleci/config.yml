@@ -30,7 +30,7 @@ jobs:
           command: |
             source /usr/local/share/virtualenvs/tap-helpscout/bin/activate
             uv pip install pytest coverage
-            coverage run -m pytest tests/unittests
+            coverage run --source=tap_helpscout -m pytest tests/unittests 
             coverage html
       - run:
           name: 'Coverage Report'
