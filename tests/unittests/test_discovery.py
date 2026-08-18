@@ -43,6 +43,25 @@ class TestGetSchemas(unittest.TestCase):
         self.assertEqual(set(schemas.keys()), set(STREAMS.keys()))
         self.assertEqual(set(metadata.keys()), set(STREAMS.keys()))
 
+    def test_child_replication_method_matches_parent(self):
+        _, metadata = get_schemas()
+
+        def top_level_metadata(stream_name):
+            return next(item["metadata"] for item in metadata[stream_name] if item.get("breadcrumb") == ())
+
+        for stream_name, stream_cls in STREAMS.items():
+            if not stream_cls.parent:
+                continue
+
+            with self.subTest(stream=stream_name):
+                child_metadata = top_level_metadata(stream_name)
+                parent_metadata = top_level_metadata(stream_cls.parent)
+                self.assertEqual(
+                    parent_metadata.get("forced-replication-method"),
+                    child_metadata.get("forced-replication-method"),
+                    f"Child stream {stream_name} should match parent {stream_cls.parent} replication method",
+                )
+
     def test_schemas_are_dicts(self):
         schemas, _ = get_schemas()
         for name, schema in schemas.items():

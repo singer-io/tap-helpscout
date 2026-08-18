@@ -220,7 +220,7 @@ class BaseStream(ABC):
                 "schema": schema,
                 "key_properties": cls.key_properties,
                 "valid_replication_keys": cls.valid_replication_keys,
-                "replication_method": cls.replication_method or cls.forced_replication_method,
+                "replication_method": cls.forced_replication_method,
             }
         )
         stream_metadata = to_map(stream_metadata)

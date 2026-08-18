@@ -4,6 +4,7 @@ from .abstract import FullStream
 class ConversationThreads(FullStream):
     """Class for `conversation_threads` stream."""
     stream = tap_stream_id = "conversation_threads"
+    forced_replication_method = "INCREMENTAL"
     path = "/conversations/{}/threads"
     key_properties = ["id"]
     data_key = "threads"

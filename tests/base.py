@@ -75,7 +75,7 @@ class HelpscoutBaseTest(unittest.TestCase):
             },
             "conversation_threads": {
                 self.PRIMARY_KEYS: {"id"},
-                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.EXPECTED_PAGE_SIZE: 50,
                 self.EXPECTED_PARENT_STREAM: "conversations",
             },
@@ -98,7 +98,7 @@ class HelpscoutBaseTest(unittest.TestCase):
             },
             "mailbox_fields": {
                 self.PRIMARY_KEYS: {"id"},
-                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.EXPECTED_PAGE_SIZE: 50,
                 self.EXPECTED_PARENT_STREAM: "mailboxes",
             },
@@ -117,7 +117,7 @@ class HelpscoutBaseTest(unittest.TestCase):
             },
             "team_members": {
                 self.PRIMARY_KEYS: {"team_id", "user_id"},
-                self.REPLICATION_METHOD: self.FULL_TABLE,
+                self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.EXPECTED_PAGE_SIZE: 50,
                 self.EXPECTED_PARENT_STREAM: "teams",
             },
