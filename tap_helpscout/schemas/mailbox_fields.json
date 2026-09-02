@@ -14,7 +14,7 @@
         "integer"
       ]
     },
-    "updated_at": {
+    "mailboxes_updated_at": {
       "type": [
         "null",
         "string"
