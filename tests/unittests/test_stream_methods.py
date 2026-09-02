@@ -203,7 +203,7 @@ class TestProcessRecords(unittest.TestCase):
 
         mock_write_record.assert_called_once_with(
             "mailbox_fields",
-            {"id": 1, "mailbox_id": 10, "updated_at": "2020-06-15T10:00:00Z"},
+            {"id": 1, "mailbox_id": 10, "mailboxes_updated_at": "2020-06-15T10:00:00Z"},
         )
         mock_write_bookmark.assert_called_once_with(state, "2020-06-15T10:00:00Z")
 

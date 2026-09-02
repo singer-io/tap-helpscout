@@ -100,7 +100,7 @@ class HelpscoutBaseTest(unittest.TestCase):
             "mailbox_fields": {
                 self.PRIMARY_KEYS: {"id"},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {"updated_at"},
+                self.REPLICATION_KEYS: {"mailboxes_updated_at"},
                 self.EXPECTED_PAGE_SIZE: 50,
                 self.EXPECTED_PARENT_STREAM: "mailboxes",
             },

@@ -6,9 +6,9 @@ class MailBoxFields(IncrementalStream):
     stream = tap_stream_id = "mailbox_fields"
     path = "/mailboxes/{}/fields"
     key_properties = ["id"]
-    replication_key = "updated_at"
+    replication_key = "mailboxes_updated_at"
     replication_key_type = "datetime"
-    valid_replication_keys = ("updated_at",)
+    valid_replication_keys = ("mailboxes_updated_at",)
     data_key = "fields"
     is_child = True
     parent = "mailboxes"
