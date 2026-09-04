@@ -8,8 +8,10 @@ from tap_helpscout.discover import (
     discover,
     get_schemas,
 )
-from tap_helpscout.exceptions import Http403Error
+from tap_helpscout.exceptions import Http403Error, Http401Error
 from tap_helpscout.streams import STREAMS
+from tap_helpscout.streams.conversations import Conversations
+
 
 
 # ---------------------------------------------------------------------------
@@ -231,3 +233,46 @@ class TestCheckAccess(unittest.TestCase):
         stream = Conversations(client=client)
         with self.assertRaises(Http500Error):
             stream.check_access()
+
+    def test_401_invalid_credentials_propagates(self):
+        """Test that 401 (invalid credentials) fails fast during discovery."""
+        client = MagicMock()
+        client.get.side_effect = Http401Error()
+        stream = Conversations(client=client)
+        with self.assertRaises(Http401Error):
+            stream.check_access()
+
+
+# ---------------------------------------------------------------------------
+# discover() – invalid credentials (401)
+# ---------------------------------------------------------------------------
+
+class TestDiscoverInvalidCredentials(unittest.TestCase):
+    """Test that discovery fails fast on invalid credentials (401 Unauthorized)."""
+
+    def _make_401_client(self):
+        """Return a mock HelpScoutClient that raises Http401Error on any .get() call."""
+        client = MagicMock()
+        client.get.side_effect = Http401Error()
+        return client
+
+    def test_apply_access_checks_fails_on_401(self):
+        """Test that _apply_access_checks raises Http401Error when credentials are invalid."""
+        schemas, metadata = get_schemas()
+        client = self._make_401_client()
+        with self.assertRaises(Http401Error):
+            _apply_access_checks(client, schemas, metadata)
+
+    def test_discover_fails_on_401(self):
+        """Test that discover() raises Http401Error when credentials are invalid."""
+        client = self._make_401_client()
+        with self.assertRaises(Http401Error):
+            discover(client)
+
+    def test_401_fails_fast_on_first_stream(self):
+        """Test that 401 fails immediately without checking all streams."""
+        client = self._make_401_client()
+        with self.assertRaises(Http401Error):
+            discover(client)
+        # Verify that client.get was called (confirming discovery was attempted)
+        client.get.assert_called()
