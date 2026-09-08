@@ -42,6 +42,8 @@ class HelpScoutClient:
         self.__session = requests.Session()
         self.__base_url = None
 
+        self.start_date = config.get("start_date")
+
     def __enter__(self):
         self.get_access_token()
         return self

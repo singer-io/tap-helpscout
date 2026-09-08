@@ -4,15 +4,15 @@ from setuptools import find_packages, setup
 
 setup(
     name="tap-helpscout",
-    version="1.3.0",
+    version="1.4.0",
     description="Singer.io tap for extracting data from the HelpScout Mailbox API 2.0",
     author="jeff.huth@bytecode.io",
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     py_modules=["tap_helpscout"],
     install_requires=[
-        "backoff==1.10.0",
-        "requests==2.33.0",
-        "singer-python==5.19.0"],
+        "backoff==2.2.1",
+        "requests==2.34.2",
+        "singer-python==6.8.0"],
     extras_require={
         "dev": [
             "ipdb",
