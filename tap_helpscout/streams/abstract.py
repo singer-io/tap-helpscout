@@ -183,10 +183,33 @@ class BaseStream(ABC):
                     # Insert the parentId into each child record
                     if self.replication_key and self.replication_key in transformed_record:
                         record_bookmark = transformed_record[self.replication_key]
-                        if parse_date(record_bookmark) >= parse_date(current_bookmark):
+                        parsed_record_bookmark = parse_date(record_bookmark) if record_bookmark else None
+                        parsed_current_bookmark = parse_date(current_bookmark) if current_bookmark else None
+
+                        if record_bookmark and parsed_record_bookmark is None:
+                            logger.warning(
+                                "Unable to parse replication key '%s' for stream '%s'. "
+                                "Writing record without bookmark comparison.",
+                                self.replication_key,
+                                self.tap_stream_id,
+                            )
+
+                        if (
+                            record_bookmark is None
+                            or parsed_record_bookmark is None
+                            or parsed_current_bookmark is None
+                            or parsed_record_bookmark >= parsed_current_bookmark
+                        ):
                             singer.write_record(self.tap_stream_id, transformed_record)
                             counter.increment()
-                            if parse_date(max_bookmark_value) < parse_date(record_bookmark):
+                            parsed_max_bookmark_value = parse_date(max_bookmark_value) if max_bookmark_value else None
+                            if (
+                                parsed_record_bookmark is not None
+                                and (
+                                    parsed_max_bookmark_value is None
+                                    or parsed_max_bookmark_value < parsed_record_bookmark
+                                )
+                            ):
                                 max_bookmark_value = record_bookmark
                             if is_parent:
                                 # Store the parent id to sync the child streams
@@ -233,7 +256,16 @@ class BaseStream(ABC):
                 persist_bookmark=False,
             )
             child_bookmark = child_state.get("bookmarks", {}).get(self.tap_stream_id, initial_bookmark)
-            if self.replication_method == "INCREMENTAL" and parse_date(max_bookmark_value) < parse_date(child_bookmark):
+            parsed_max_bookmark_value = parse_date(max_bookmark_value) if max_bookmark_value else None
+            parsed_child_bookmark = parse_date(child_bookmark) if child_bookmark else None
+            if (
+                self.replication_method == "INCREMENTAL"
+                and parsed_child_bookmark is not None
+                and (
+                    parsed_max_bookmark_value is None
+                    or parsed_max_bookmark_value < parsed_child_bookmark
+                )
+            ):
                 max_bookmark_value = child_bookmark
         if self.replication_method == "INCREMENTAL":
             self.write_bookmark(state, max_bookmark_value)
