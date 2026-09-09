@@ -13,4 +13,3 @@ class TeamMembers(IncrementalStream):
     is_child = True
     parent = "teams"
     parent_id_field = "team_id"
-    parent_replication_key = "updated_at"

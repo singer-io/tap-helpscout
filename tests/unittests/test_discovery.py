@@ -64,6 +64,26 @@ class TestGetSchemas(unittest.TestCase):
                     f"Child stream {stream_name} should match parent {stream_cls.parent} replication method",
                 )
 
+    def test_inherited_child_replication_key_naming(self):
+        for stream_name, stream_cls in STREAMS.items():
+            if not getattr(stream_cls, "inherit_parent_bookmark", False):
+                continue
+
+            with self.subTest(stream=stream_name):
+                parent_stream_id = stream_cls.parent
+                parent_stream_cls = STREAMS[parent_stream_id]
+                expected_replication_key = f"{parent_stream_id}_{parent_stream_cls.replication_key}"
+                self.assertEqual(
+                    stream_cls.replication_key,
+                    expected_replication_key,
+                    f"Child stream {stream_name} should use replication key {expected_replication_key}",
+                )
+                self.assertIn(
+                    expected_replication_key,
+                    stream_cls.valid_replication_keys,
+                    f"Child stream {stream_name} valid replication keys should include {expected_replication_key}",
+                )
+
     def test_schemas_are_dicts(self):
         schemas, _ = get_schemas()
         for name, schema in schemas.items():

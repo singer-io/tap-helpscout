@@ -13,4 +13,4 @@ class MailBoxFields(IncrementalStream):
     is_child = True
     parent = "mailboxes"
     parent_id_field = "mailbox_id"
-    parent_replication_key = "updated_at"
+    inherit_parent_bookmark = True

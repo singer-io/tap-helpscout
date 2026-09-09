@@ -94,10 +94,10 @@ class TestGetRecords(unittest.TestCase):
             "_embedded": {"conversations": [{"id": 1}]}
         }
         stream = Conversations(client=mock_client, start_date="2020-01-01")
-        
+
         with patch.object(stream, "transform_records", return_value=[{"id": 1}]):
             records = list(stream.get_records({}))
-        
+
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]["id"], 1)
 
@@ -109,10 +109,10 @@ class TestGetRecords(unittest.TestCase):
             {"page": {"number": 2, "totalPages": 2}, "_embedded": {"conversations": [{"id": 2}]}},
         ]
         stream = Conversations(client=mock_client, start_date="2020-01-01")
-        
+
         with patch.object(stream, "transform_records", side_effect=[[{"id": 1}], [{"id": 2}]]):
             records = list(stream.get_records({}))
-        
+
         self.assertEqual(len(records), 2)
         self.assertEqual(mock_client.get.call_count, 2)
 
@@ -124,10 +124,10 @@ class TestGetRecords(unittest.TestCase):
             "_embedded": {"threads": [{"id": 1}]}
         }
         stream = ConversationThreads(client=mock_client, start_date="2020-01-01")
-        
+
         with patch.object(stream, "transform_records", return_value=[{"id": 1}]):
             list(stream.get_records({}, parent_id=123))
-        
+
         # Verify path was formatted with parent_id
         call_args = mock_client.get.call_args
         self.assertIn("123", call_args[0][0])
@@ -143,14 +143,14 @@ class TestProcessRecords(unittest.TestCase):
         mock_client = MagicMock()
         mock_transformer = MagicMock()
         mock_transformer_class.return_value.__enter__.return_value = mock_transformer
-        
+
         mock_transformer.transform.return_value = {"id": 1, "name": "test"}
-        
+
         stream = ConversationThreads(client=mock_client, start_date="2020-01-01")
-        
+
         with patch.object(stream, "get_records", return_value=[{"id": 1, "name": "test"}]):
             parent_ids = stream.process_records({}, {}, [], is_parent=False)
-        
+
         mock_write_record.assert_called_once()
         self.assertEqual(parent_ids, set())
 
@@ -161,18 +161,18 @@ class TestProcessRecords(unittest.TestCase):
         mock_client = MagicMock()
         mock_transformer = MagicMock()
         mock_transformer_class.return_value.__enter__.return_value = mock_transformer
-        
+
         mock_transformer.transform.return_value = {
             "id": 1,
             "updated_at": "2020-06-15T10:00:00Z"
         }
-        
+
         stream = Conversations(client=mock_client, start_date="2020-01-01")
-        
+
         with patch.object(stream, "get_records", return_value=[{"id": 1, "updated_at": "2020-06-15T10:00:00Z"}]):
             with patch.object(stream, "write_bookmark"):
                 parent_ids = stream.process_records({}, {}, [], is_parent=False)
-        
+
         mock_write_record.assert_called_once()
 
     @patch("tap_helpscout.streams.abstract.singer.write_record")
@@ -214,18 +214,18 @@ class TestProcessRecords(unittest.TestCase):
         mock_client = MagicMock()
         mock_transformer = MagicMock()
         mock_transformer_class.return_value.__enter__.return_value = mock_transformer
-        
+
         mock_transformer.transform.return_value = {
             "id": 123,
             "updated_at": "2020-06-15T10:00:00Z"
         }
-        
+
         stream = Conversations(client=mock_client, start_date="2020-01-01")
-        
+
         with patch.object(stream, "get_records", return_value=[{"id": 123, "updated_at": "2020-06-15T10:00:00Z"}]):
             with patch.object(stream, "write_bookmark"):
                 parent_ids = stream.process_records({}, {}, [], is_parent=True)
-        
+
         self.assertIn(123, parent_ids)
 
     @patch("tap_helpscout.streams.abstract.singer.write_record")
@@ -235,18 +235,18 @@ class TestProcessRecords(unittest.TestCase):
         mock_client = MagicMock()
         mock_transformer = MagicMock()
         mock_transformer_class.return_value.__enter__.return_value = mock_transformer
-        
+
         mock_transformer.transform.return_value = {
             "id": 1,
             "updated_at": "2020-01-01T10:00:00Z"  # older than bookmark
         }
-        
+
         stream = Conversations(client=mock_client, start_date="2020-01-01")
         state = {"bookmarks": {"conversations": "2020-06-01T00:00:00Z"}}
-        
+
         with patch.object(stream, "get_records", return_value=[{"id": 1, "updated_at": "2020-01-01T10:00:00Z"}]):
             stream.process_records(state, {}, [], is_parent=False)
-        
+
         # Record should not be written because it's older than bookmark
         mock_write_record.assert_not_called()
 
@@ -259,10 +259,10 @@ class TestSync(unittest.TestCase):
         """Test sync for parent stream."""
         mock_client = MagicMock()
         mock_process.return_value = {123, 456}
-        
+
         stream = Conversations(client=mock_client, start_date="2020-01-01")
         result = stream.sync({}, {}, [], is_child=False)
-        
+
         mock_process.assert_called_once()
         self.assertEqual(result, {123, 456})
 

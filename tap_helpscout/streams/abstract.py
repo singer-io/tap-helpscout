@@ -18,7 +18,7 @@ class BaseStream(ABC):
     """Base class representing generic stream methods and meta-attributes."""
 
     parent_id_field = ""
-    parent_replication_key = None
+    inherit_parent_bookmark = False
 
     @property
     @abstractmethod
@@ -175,10 +175,10 @@ class BaseStream(ABC):
                 for record in self.get_records(state, parent_id):
                     if parent_id:
                         record[self.parent_id_field] = parent_id
-                    if self.parent_replication_key and self.replication_key and parent_bookmark:
+                    if self.inherit_parent_bookmark and self.replication_key and parent_bookmark:
                         record[self.replication_key] = parent_bookmark
                     transformed_record = transformer.transform(record, schema, stream_metadata)
-                    if self.parent_replication_key and self.replication_key and parent_bookmark:
+                    if self.inherit_parent_bookmark and self.replication_key and parent_bookmark:
                         transformed_record[self.replication_key] = parent_bookmark
                     # Insert the parentId into each child record
                     if self.replication_key and self.replication_key in transformed_record:
