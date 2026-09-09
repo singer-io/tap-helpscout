@@ -8,8 +8,10 @@ from tap_helpscout.discover import (
     discover,
     get_schemas,
 )
-from tap_helpscout.exceptions import Http403Error
+from tap_helpscout.exceptions import Http403Error, Http401Error
 from tap_helpscout.streams import STREAMS
+from tap_helpscout.streams.conversations import Conversations
+
 
 
 # ---------------------------------------------------------------------------
