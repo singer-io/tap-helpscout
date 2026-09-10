@@ -35,8 +35,8 @@ This tap:
 - Endpoint: https://api.helpscout.net/v2/conversations/{conversation_id}/threads
 - Primary keys: id
 - Foreign keys: conversation_id (conversations), customer > id (customers), created_by > id (users), assigned_to > id (users)
-- Replication strategy: Full table (ALL for each parent Conversation)
-  - Bookmark: None
+- Replication strategy: Incremental (query all per parent Conversation, filter results)
+  - Bookmark: created_at (date-time)
 - Transformations: Fields camelCase to snake_case. De-nest attachments array node. Add parent conversation_id field.
 - Parent: conversations
 
@@ -63,8 +63,9 @@ This tap:
 - Endpoint: https://api.helpscout.net/v2/mailboxes/{mailbox_id}/fields
 - Primary keys: id
 - Foreign keys: mailbox_id (mailboxes)
-- Replication strategy: Full table (ALL for each parent Mailbox)
-  - Bookmark: None
+- Replication strategy: Incremental (query all per parent Mailbox, filter results)
+  - Bookmark: mailboxes_updated_at (date-time)
+  - Parent bookmark behavior: Uses parent stream `mailboxes.updated_at` as the child record bookmark value.
 - Transformations: Fields camelCase to snake_case. Add parent mailbox_id field.
 - Parent: mailboxes
 
@@ -113,8 +114,9 @@ This tap:
 - Endpoint: https://api.helpscout.net/v2/teams/{team_id}/members
 - Primary keys: team_id, user_id
 - Foreign keys: team_id(teams), user_id(users)
-- Replication strategy: Full table (ALL for each parent Conversation)
-  - Bookmark: None
+- Replication strategy: Incremental (query all per parent Team, filter results)
+  - Bookmark: updated_at (date-time)
+  - Parent bookmark behavior: Uses parent stream `teams.updated_at` as the child record bookmark value.
 - Transformations: Fields camelCase to snake_case.
 
 
@@ -196,8 +198,11 @@ Record your `client_id`, `client_secret`, and the returned `refresh_token` into 
         "currently_syncing": "users",
         "bookmarks": {
             "customers": "2019-06-11T13:37:55Z",
+            "mailbox_fields": "2019-06-19T19:48:42Z",
             "mailbox_folders": "2019-06-19T19:48:42Z",
             "mailboxes": "2019-06-18T18:23:58Z",
+            "team_members": "2019-06-20T00:52:46Z",
+            "teams": "2019-06-20T00:52:46Z",
             "users": "2019-06-20T00:52:46Z",
             "workflows": "2019-06-19T19:48:44Z",
             "conversation_threads": "2019-06-11T13:37:55Z",

@@ -18,6 +18,7 @@ class BaseStream(ABC):
     """Base class representing generic stream methods and meta-attributes."""
 
     parent_id_field = ""
+    inherit_parent_bookmark = False
 
     @property
     @abstractmethod
@@ -163,25 +164,53 @@ class BaseStream(ABC):
             return []
 
     def process_records(self, state: Dict, schema: Dict, stream_metadata: Dict, is_parent=False,
-                        parent_id=None) -> Set:
+                        parent_id=None, persist_bookmark=True) -> Set:
         """Processes and writes transformed data"""
 
         parent_ids = set()
         current_bookmark = max_bookmark_value = self.get_bookmark(state)
+        parent_bookmark = state.get("bookmarks", {}).get(self.parent) if self.parent else None
         with Transformer() as transformer:
             with metrics.record_counter(self.tap_stream_id) as counter:
                 for record in self.get_records(state, parent_id):
                     if parent_id:
                         record[self.parent_id_field] = parent_id
+                    if self.inherit_parent_bookmark and self.replication_key and parent_bookmark:
+                        record[self.replication_key] = parent_bookmark
                     transformed_record = transformer.transform(record, schema, stream_metadata)
+                    if self.inherit_parent_bookmark and self.replication_key and parent_bookmark:
+                        transformed_record[self.replication_key] = parent_bookmark
                     # Insert the parentId into each child record
                     if self.replication_key and self.replication_key in transformed_record:
                         record_bookmark = transformed_record[self.replication_key]
-                        if parse_date(record_bookmark) >= parse_date(current_bookmark):
+                        parsed_record_bookmark = parse_date(record_bookmark) if record_bookmark else None
+                        parsed_current_bookmark = parse_date(current_bookmark) if current_bookmark else None
+
+                        if record_bookmark and parsed_record_bookmark is None:
+                            logger.warning(
+                                "Unable to parse replication key '%s' for stream '%s'. "
+                                "Writing record without bookmark comparison.",
+                                self.replication_key,
+                                self.tap_stream_id,
+                            )
+
+                        if (
+                            record_bookmark is None
+                            or parsed_record_bookmark is None
+                            or parsed_current_bookmark is None
+                            or parsed_record_bookmark >= parsed_current_bookmark
+                        ):
                             singer.write_record(self.tap_stream_id, transformed_record)
                             counter.increment()
-                            if parse_date(max_bookmark_value) < parse_date(record[self.replication_key]):
-                                max_bookmark_value = record[self.replication_key]
+                            parsed_max_bookmark_value = parse_date(max_bookmark_value) if max_bookmark_value else None
+                            if (
+                                parsed_record_bookmark is not None
+                                and (
+                                    parsed_max_bookmark_value is None
+                                    or parsed_max_bookmark_value < parsed_record_bookmark
+                                )
+                            ):
+                                max_bookmark_value = record_bookmark
                             if is_parent:
                                 # Store the parent id to sync the child streams
                                 parent_ids.add(record["id"])
@@ -189,7 +218,11 @@ class BaseStream(ABC):
                         singer.write_record(self.tap_stream_id, transformed_record)
                         counter.increment()
                 if self.replication_method == "INCREMENTAL":
-                    self.write_bookmark(state, max_bookmark_value)
+                    if persist_bookmark:
+                        self.write_bookmark(state, max_bookmark_value)
+                    else:
+                        state = ensure_bookmark_path(state, ["bookmarks", self.tap_stream_id])
+                        state["bookmarks"][self.tap_stream_id] = max_bookmark_value
         return parent_ids
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, parent_ids=None, is_child=False):
@@ -204,13 +237,38 @@ class BaseStream(ABC):
         is_parent = bool(self.child_streams)
         if not is_child:
             return self.process_records(state, schema, stream_metadata, is_parent)
+        initial_bookmark = self.get_bookmark(state)
+        max_bookmark_value = initial_bookmark
         for parent_id in parent_ids:
             logger.info(
                 f"Starting sync for child stream {self.tap_stream_id} of parent"
                 f" {self.parent} for "
                 f"Id {parent_id}"
             )
-            self.process_records(state, schema, stream_metadata, is_parent, parent_id)
+            child_state = {**state, "bookmarks": dict(state.get("bookmarks", {}))}
+            child_state["bookmarks"][self.tap_stream_id] = initial_bookmark
+            self.process_records(
+                child_state,
+                schema,
+                stream_metadata,
+                is_parent,
+                parent_id,
+                persist_bookmark=False,
+            )
+            child_bookmark = child_state.get("bookmarks", {}).get(self.tap_stream_id, initial_bookmark)
+            parsed_max_bookmark_value = parse_date(max_bookmark_value) if max_bookmark_value else None
+            parsed_child_bookmark = parse_date(child_bookmark) if child_bookmark else None
+            if (
+                self.replication_method == "INCREMENTAL"
+                and parsed_child_bookmark is not None
+                and (
+                    parsed_max_bookmark_value is None
+                    or parsed_max_bookmark_value < parsed_child_bookmark
+                )
+            ):
+                max_bookmark_value = child_bookmark
+        if self.replication_method == "INCREMENTAL":
+            self.write_bookmark(state, max_bookmark_value)
 
     @classmethod
     def get_metadata(cls, schema: Dict) -> Dict[str, str]:

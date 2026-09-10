@@ -18,3 +18,4 @@ venv/
 build/
 tap_target_commands.sh
 tap_helpscout/.vscode/settings.json
+tmp/
