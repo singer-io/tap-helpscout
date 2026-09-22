@@ -116,7 +116,7 @@ This tap:
 - Foreign keys: team_id(teams), user_id(users)
 - Replication strategy: Incremental (query all per parent Team, filter results)
   - Bookmark: updated_at (date-time)
-  - Parent bookmark behavior: Uses parent stream `teams.updated_at` as the child record bookmark value.
+  - Bookmark source: Uses the member record `updated_at` value.
 - Transformations: Fields camelCase to snake_case.
 
 
