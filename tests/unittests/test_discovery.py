@@ -264,6 +264,15 @@ class TestCheckAccess(unittest.TestCase):
         stream = Conversations(client=client)
         self.assertFalse(stream.check_access())
 
+    def test_parent_stream_http401_propagates(self):
+        """Invalid credentials (401) must fail fast and bubble up unchanged."""
+        from tap_helpscout.streams.conversations import Conversations
+        client = MagicMock()
+        client.get.side_effect = Http401Error()
+        stream = Conversations(client=client)
+        with self.assertRaises(Http401Error):
+            stream.check_access()
+
     def test_non_403_exception_propagates(self):
         from tap_helpscout.streams.conversations import Conversations
         from tap_helpscout.exceptions import Http500Error

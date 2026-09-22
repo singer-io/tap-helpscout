@@ -169,6 +169,7 @@ class BaseStream(ABC):
 
         parent_ids = set()
         current_bookmark = max_bookmark_value = self.get_bookmark(state)
+        parsed_current_bookmark = parse_date(current_bookmark) if current_bookmark else None
         parent_bookmark = state.get("bookmarks", {}).get(self.parent) if self.parent else None
         with Transformer() as transformer:
             with metrics.record_counter(self.tap_stream_id) as counter:
@@ -184,7 +185,6 @@ class BaseStream(ABC):
                     if self.replication_key and self.replication_key in transformed_record:
                         record_bookmark = transformed_record[self.replication_key]
                         parsed_record_bookmark = parse_date(record_bookmark) if record_bookmark else None
-                        parsed_current_bookmark = parse_date(current_bookmark) if current_bookmark else None
 
                         if record_bookmark and parsed_record_bookmark is None:
                             logger.warning(
