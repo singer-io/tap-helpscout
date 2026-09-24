@@ -236,7 +236,17 @@ class BaseStream(ABC):
         """
         is_parent = bool(self.child_streams)
         if not is_child:
-            return self.process_records(state, schema, stream_metadata, is_parent)
+            # For parent incremental streams, defer bookmark persistence until
+            # all child streams complete so parent/child progress remains
+            # restart-safe as a unit.
+            should_defer_bookmark = is_parent and self.replication_method == "INCREMENTAL"
+            return self.process_records(
+                state,
+                schema,
+                stream_metadata,
+                is_parent,
+                persist_bookmark=not should_defer_bookmark,
+            )
         initial_bookmark = self.get_bookmark(state)
         max_bookmark_value = initial_bookmark
         for parent_id in parent_ids:

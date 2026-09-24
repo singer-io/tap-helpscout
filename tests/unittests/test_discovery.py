@@ -35,6 +35,14 @@ def _make_client(forbidden_streams=None):
     return client
 
 
+def _make_client_401():
+    """Return a mock HelpScoutClient whose .get() always raises Http401Error."""
+
+    client = MagicMock()
+    client.get.side_effect = Http401Error()
+    return client
+
+
 # ---------------------------------------------------------------------------
 # get_schemas
 # ---------------------------------------------------------------------------
@@ -212,6 +220,19 @@ class TestApplyAccessChecksCompleteDenial(unittest.TestCase):
     def test_discover_raises_http403_when_no_parent_accessible(self):
         client = _make_client(forbidden_streams=self._all_parent_paths())
         with self.assertRaises(Http403Error):
+            discover(client)
+
+    def test_apply_access_checks_propagates_http401(self):
+        """_apply_access_checks should fail fast on invalid credentials."""
+        schemas, metadata = get_schemas()
+        client = _make_client_401()
+        with self.assertRaises(Http401Error):
+            _apply_access_checks(client, schemas, metadata)
+
+    def test_discover_propagates_http401(self):
+        """discover() should propagate Http401 from stream access probes."""
+        client = _make_client_401()
+        with self.assertRaises(Http401Error):
             discover(client)
 
 
