@@ -48,12 +48,12 @@ def sync(client: HelpScoutClient, catalog: Catalog, state: Dict, start_date: str
                     )
                     child_stream_obj.sync(state, child_stream_schema, child_stream_metadata, parent_ids, True)
 
-                # For parent incremental streams with children, bookmark persistence is
-                # intentionally deferred inside BaseStream.sync() until child syncing
-                # succeeds. Persist it here only after child loops have completed.
-                if stream_obj.child_streams and getattr(stream_obj, "replication_method", None) == "INCREMENTAL":
-                    bookmark_value = state.get("bookmarks", {}).get(tap_stream_id)
-                    stream_obj.write_bookmark(state, bookmark_value)
+        # For parent incremental streams with children, bookmark persistence is
+        # intentionally deferred inside BaseStream.sync() until child syncing
+        # succeeds. Persist it here only after child loops have completed.
+        if stream_obj.child_streams and getattr(stream_obj, "replication_method", None) == "INCREMENTAL":
+            bookmark_value = state.get("bookmarks", {}).get(tap_stream_id)
+            stream_obj.write_bookmark(state, bookmark_value)
 
     state = set_currently_syncing(state, None)
     write_state(state)
