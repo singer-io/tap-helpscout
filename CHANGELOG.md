@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.5.0
+## 2.0.0
   * Refactor inherited parent-bookmark configuration for child streams. [#49](https://github.com/singer-io/tap-helpscout/pull/49)
 
 ## 1.4.0

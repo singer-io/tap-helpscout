@@ -6,7 +6,10 @@
       "type": ["integer"]
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "user_id": {
