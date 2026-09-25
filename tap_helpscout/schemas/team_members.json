@@ -5,6 +5,13 @@
     "team_id": {
       "type": ["integer"]
     },
+    "updated_at": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
     "user_id": {
       "type": ["integer"]
     }

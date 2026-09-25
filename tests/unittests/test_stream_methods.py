@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from tap_helpscout.streams.abstract import IncrementalStream, FullStream
 from tap_helpscout.streams.conversations import Conversations
 from tap_helpscout.streams.conversation_threads import ConversationThreads
+from tap_helpscout.streams.mailbox_fields import MailBoxFields
 from tap_helpscout.streams.happiness_ratings_report import HappinessRatingsReport
 
 
@@ -176,6 +177,38 @@ class TestProcessRecords(unittest.TestCase):
 
     @patch("tap_helpscout.streams.abstract.singer.write_record")
     @patch("tap_helpscout.streams.abstract.Transformer")
+    def test_process_records_child_stream_inherits_parent_bookmark(
+        self, mock_transformer_class, mock_write_record
+    ):
+        """Test child incremental streams derive record bookmarks from the parent stream."""
+        mock_client = MagicMock()
+        mock_transformer = MagicMock()
+        mock_transformer_class.return_value.__enter__.return_value = mock_transformer
+
+        mock_transformer.transform.return_value = {
+            "id": 1,
+            "mailbox_id": 10,
+        }
+
+        state = {
+            "bookmarks": {
+                "mailboxes": "2020-06-15T10:00:00Z",
+            }
+        }
+        stream = MailBoxFields(client=mock_client, start_date="2020-01-01")
+
+        with patch.object(stream, "get_records", return_value=[{"id": 1, "mailbox_id": 10}]):
+            with patch.object(stream, "write_bookmark") as mock_write_bookmark:
+                stream.process_records(state, {}, [], is_parent=False, parent_id=10)
+
+        mock_write_record.assert_called_once_with(
+            "mailbox_fields",
+            {"id": 1, "mailbox_id": 10, "mailboxes_updated_at": "2020-06-15T10:00:00Z"},
+        )
+        mock_write_bookmark.assert_called_once_with(state, "2020-06-15T10:00:00Z")
+
+    @patch("tap_helpscout.streams.abstract.singer.write_record")
+    @patch("tap_helpscout.streams.abstract.Transformer")
     def test_process_records_parent_stream_collects_ids(self, mock_transformer_class, mock_write_record):
         """Test that process_records collects parent IDs."""
         mock_client = MagicMock()
@@ -217,6 +250,29 @@ class TestProcessRecords(unittest.TestCase):
         # Record should not be written because it's older than bookmark
         mock_write_record.assert_not_called()
 
+    @patch("tap_helpscout.streams.abstract.singer.write_record")
+    @patch("tap_helpscout.streams.abstract.Transformer")
+    def test_process_records_handles_none_record_bookmark(self, mock_transformer_class, mock_write_record):
+        """Test incremental processing safely handles records with null replication values."""
+        mock_client = MagicMock()
+        mock_transformer = MagicMock()
+        mock_transformer_class.return_value.__enter__.return_value = mock_transformer
+
+        mock_transformer.transform.return_value = {
+            "id": 1,
+            "updated_at": None,
+        }
+
+        stream = Conversations(client=mock_client, start_date="2020-01-01")
+        state = {"bookmarks": {"conversations": "2020-06-01T00:00:00Z"}}
+
+        with patch.object(stream, "get_records", return_value=[{"id": 1, "updated_at": None}]):
+            with patch.object(stream, "write_bookmark") as mock_write_bookmark:
+                stream.process_records(state, {}, [], is_parent=False)
+
+        mock_write_record.assert_called_once_with("conversations", {"id": 1, "updated_at": None})
+        mock_write_bookmark.assert_called_once_with(state, "2020-06-01T00:00:00Z")
+
 
 class TestSync(unittest.TestCase):
     """Test BaseStream.sync() method."""
@@ -232,3 +288,53 @@ class TestSync(unittest.TestCase):
 
         mock_process.assert_called_once()
         self.assertEqual(result, {123, 456})
+
+    @patch("tap_helpscout.streams.abstract.IncrementalStream.process_records")
+    def test_sync_child_stream_persists_bookmark_once_after_all_parents(self, mock_process):
+        """Test child incremental streams use the starting bookmark for all parents."""
+        mock_client = MagicMock()
+        stream = ConversationThreads(client=mock_client, start_date="2020-01-01")
+        state = {"bookmarks": {"conversation_threads": "2020-01-01T00:00:00Z"}}
+        seen_bookmarks = []
+
+        def process_side_effect(child_state, schema, stream_metadata, is_parent, parent_id, persist_bookmark=True):
+            seen_bookmarks.append(child_state["bookmarks"]["conversation_threads"])
+            if parent_id == 100:
+                child_state["bookmarks"]["conversation_threads"] = "2020-01-02T00:00:00Z"
+            elif parent_id == 200:
+                child_state["bookmarks"]["conversation_threads"] = "2020-01-03T00:00:00Z"
+            return set()
+
+        mock_process.side_effect = process_side_effect
+
+        with patch.object(stream, "write_bookmark") as mock_write_bookmark:
+            stream.sync(state, {}, [], parent_ids=[100, 200], is_child=True)
+
+        self.assertEqual(mock_process.call_count, 2)
+        first_call = mock_process.call_args_list[0]
+        second_call = mock_process.call_args_list[1]
+        self.assertEqual(seen_bookmarks, ["2020-01-01T00:00:00Z", "2020-01-01T00:00:00Z"])
+        self.assertFalse(first_call.kwargs["persist_bookmark"])
+        self.assertFalse(second_call.kwargs["persist_bookmark"])
+        mock_write_bookmark.assert_called_once_with(state, "2020-01-03T00:00:00Z")
+
+    @patch("tap_helpscout.streams.abstract.IncrementalStream.process_records")
+    def test_sync_child_stream_handles_none_child_bookmark(self, mock_process):
+        """Test child sync does not parse None bookmarks while aggregating max bookmark."""
+        mock_client = MagicMock()
+        stream = ConversationThreads(client=mock_client, start_date="2020-01-01")
+        state = {"bookmarks": {"conversation_threads": "2020-01-01T00:00:00Z"}}
+
+        def process_side_effect(child_state, schema, stream_metadata, is_parent, parent_id, persist_bookmark=True):
+            if parent_id == 100:
+                child_state["bookmarks"]["conversation_threads"] = None
+            elif parent_id == 200:
+                child_state["bookmarks"]["conversation_threads"] = "2020-01-03T00:00:00Z"
+            return set()
+
+        mock_process.side_effect = process_side_effect
+
+        with patch.object(stream, "write_bookmark") as mock_write_bookmark:
+            stream.sync(state, {}, [], parent_ids=[100, 200], is_child=True)
+
+        mock_write_bookmark.assert_called_once_with(state, "2020-01-03T00:00:00Z")
