@@ -188,3 +188,123 @@ class TestSync(unittest.TestCase):
 
         # Write schema only called once (for parent, child skipped)
         self.assertEqual(mock_write_schema.call_count, 1)
+
+    @patch("tap_helpscout.sync.set_currently_syncing")
+    @patch("tap_helpscout.sync.write_state")
+    @patch("tap_helpscout.sync.write_schema")
+    @patch("tap_helpscout.sync.metadata")
+    def test_parent_incremental_bookmark_persisted_after_child_sync_success(
+        self, mock_metadata, mock_write_schema, mock_write_state, mock_set_sync
+    ):
+        """Parent bookmark is persisted only after child streams finish successfully."""
+        mock_client = MagicMock()
+        mock_state = {"bookmarks": {"mailboxes": "2020-01-01T00:00:00Z"}}
+
+        mock_set_sync.side_effect = lambda state, stream_id: {**state, "currently_syncing": stream_id}
+        mock_metadata.to_map.return_value = {}
+
+        mock_parent_stream = MagicMock()
+        mock_parent_stream.tap_stream_id = "mailboxes"
+        mock_parent_stream.schema.to_dict.return_value = {"type": "object"}
+        mock_parent_stream.metadata = []
+        mock_parent_stream.replication_key = "updated_at"
+
+        mock_child_stream = MagicMock()
+        mock_child_stream.tap_stream_id = "mailbox_fields"
+        mock_child_stream.schema.to_dict.return_value = {"type": "object"}
+        mock_child_stream.metadata = []
+        mock_child_stream.replication_key = "mailboxes_updated_at"
+        mock_child_stream.is_selected.return_value = True
+
+        mock_catalog = MagicMock()
+        mock_catalog.get_selected_streams.return_value = [mock_parent_stream]
+        mock_catalog.get_stream.return_value = mock_child_stream
+
+        mock_mailboxes_instance = MagicMock()
+        mock_mailboxes_instance.is_child = False
+        mock_mailboxes_instance.child_streams = ["mailbox_fields"]
+        mock_mailboxes_instance.key_properties = ["id"]
+        mock_mailboxes_instance.replication_method = "INCREMENTAL"
+
+        def parent_sync_side_effect(state, *_args, **_kwargs):
+            state["bookmarks"]["mailboxes"] = "2020-01-05T00:00:00Z"
+            return {1, 2}
+
+        mock_mailboxes_instance.sync.side_effect = parent_sync_side_effect
+        mock_mailboxes_class = MagicMock(return_value=mock_mailboxes_instance, is_child=False)
+
+        mock_mailbox_fields_instance = MagicMock()
+        mock_mailbox_fields_instance.is_child = True
+        mock_mailbox_fields_instance.key_properties = ["id"]
+        mock_mailbox_fields_class = MagicMock(return_value=mock_mailbox_fields_instance, is_child=True)
+
+        with patch.dict(
+            "tap_helpscout.sync.STREAMS",
+            {"mailboxes": mock_mailboxes_class, "mailbox_fields": mock_mailbox_fields_class},
+        ):
+            sync(mock_client, mock_catalog, mock_state, "2020-01-01")
+
+        mock_mailbox_fields_instance.sync.assert_called_once()
+        mock_mailboxes_instance.write_bookmark.assert_called_once()
+        write_args, _ = mock_mailboxes_instance.write_bookmark.call_args
+        self.assertEqual(write_args[1], "2020-01-05T00:00:00Z")
+        self.assertEqual(write_args[0]["bookmarks"]["mailboxes"], "2020-01-05T00:00:00Z")
+
+    @patch("tap_helpscout.sync.set_currently_syncing")
+    @patch("tap_helpscout.sync.write_state")
+    @patch("tap_helpscout.sync.write_schema")
+    @patch("tap_helpscout.sync.metadata")
+    def test_parent_incremental_bookmark_not_persisted_when_child_sync_fails(
+        self, mock_metadata, mock_write_schema, mock_write_state, mock_set_sync
+    ):
+        """Child sync failure must prevent parent bookmark persistence."""
+        mock_client = MagicMock()
+        mock_state = {"bookmarks": {"mailboxes": "2020-01-01T00:00:00Z"}}
+
+        mock_set_sync.side_effect = lambda state, stream_id: {**state, "currently_syncing": stream_id}
+        mock_metadata.to_map.return_value = {}
+
+        mock_parent_stream = MagicMock()
+        mock_parent_stream.tap_stream_id = "mailboxes"
+        mock_parent_stream.schema.to_dict.return_value = {"type": "object"}
+        mock_parent_stream.metadata = []
+        mock_parent_stream.replication_key = "updated_at"
+
+        mock_child_stream = MagicMock()
+        mock_child_stream.tap_stream_id = "mailbox_fields"
+        mock_child_stream.schema.to_dict.return_value = {"type": "object"}
+        mock_child_stream.metadata = []
+        mock_child_stream.replication_key = "mailboxes_updated_at"
+        mock_child_stream.is_selected.return_value = True
+
+        mock_catalog = MagicMock()
+        mock_catalog.get_selected_streams.return_value = [mock_parent_stream]
+        mock_catalog.get_stream.return_value = mock_child_stream
+
+        mock_mailboxes_instance = MagicMock()
+        mock_mailboxes_instance.is_child = False
+        mock_mailboxes_instance.child_streams = ["mailbox_fields"]
+        mock_mailboxes_instance.key_properties = ["id"]
+        mock_mailboxes_instance.replication_method = "INCREMENTAL"
+
+        def parent_sync_side_effect(state, *_args, **_kwargs):
+            state["bookmarks"]["mailboxes"] = "2020-01-05T00:00:00Z"
+            return {1, 2}
+
+        mock_mailboxes_instance.sync.side_effect = parent_sync_side_effect
+        mock_mailboxes_class = MagicMock(return_value=mock_mailboxes_instance, is_child=False)
+
+        mock_mailbox_fields_instance = MagicMock()
+        mock_mailbox_fields_instance.is_child = True
+        mock_mailbox_fields_instance.key_properties = ["id"]
+        mock_mailbox_fields_instance.sync.side_effect = RuntimeError("child sync failed")
+        mock_mailbox_fields_class = MagicMock(return_value=mock_mailbox_fields_instance, is_child=True)
+
+        with patch.dict(
+            "tap_helpscout.sync.STREAMS",
+            {"mailboxes": mock_mailboxes_class, "mailbox_fields": mock_mailbox_fields_class},
+        ):
+            with self.assertRaises(RuntimeError):
+                sync(mock_client, mock_catalog, mock_state, "2020-01-01")
+
+        mock_mailboxes_instance.write_bookmark.assert_not_called()

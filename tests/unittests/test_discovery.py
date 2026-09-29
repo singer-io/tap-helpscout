@@ -35,6 +35,14 @@ def _make_client(forbidden_streams=None):
     return client
 
 
+def _make_client_401():
+    """Return a mock HelpScoutClient whose .get() always raises Http401Error."""
+
+    client = MagicMock()
+    client.get.side_effect = Http401Error()
+    return client
+
+
 # ---------------------------------------------------------------------------
 # get_schemas
 # ---------------------------------------------------------------------------
@@ -44,6 +52,45 @@ class TestGetSchemas(unittest.TestCase):
         schemas, metadata = get_schemas()
         self.assertEqual(set(schemas.keys()), set(STREAMS.keys()))
         self.assertEqual(set(metadata.keys()), set(STREAMS.keys()))
+
+    def test_child_replication_method_matches_parent(self):
+        _, metadata = get_schemas()
+
+        def top_level_metadata(stream_name):
+            return next(item["metadata"] for item in metadata[stream_name] if item.get("breadcrumb") == ())
+
+        for stream_name, stream_cls in STREAMS.items():
+            if not stream_cls.parent:
+                continue
+
+            with self.subTest(stream=stream_name):
+                child_metadata = top_level_metadata(stream_name)
+                parent_metadata = top_level_metadata(stream_cls.parent)
+                self.assertEqual(
+                    parent_metadata.get("forced-replication-method"),
+                    child_metadata.get("forced-replication-method"),
+                    f"Child stream {stream_name} should match parent {stream_cls.parent} replication method",
+                )
+
+    def test_inherited_child_replication_key_naming(self):
+        for stream_name, stream_cls in STREAMS.items():
+            if not getattr(stream_cls, "inherit_parent_bookmark", False):
+                continue
+
+            with self.subTest(stream=stream_name):
+                parent_stream_id = stream_cls.parent
+                parent_stream_cls = STREAMS[parent_stream_id]
+                expected_replication_key = f"{parent_stream_id}_{parent_stream_cls.replication_key}"
+                self.assertEqual(
+                    stream_cls.replication_key,
+                    expected_replication_key,
+                    f"Child stream {stream_name} should use replication key {expected_replication_key}",
+                )
+                self.assertIn(
+                    expected_replication_key,
+                    stream_cls.valid_replication_keys,
+                    f"Child stream {stream_name} valid replication keys should include {expected_replication_key}",
+                )
 
     def test_schemas_are_dicts(self):
         schemas, _ = get_schemas()
@@ -175,6 +222,19 @@ class TestApplyAccessChecksCompleteDenial(unittest.TestCase):
         with self.assertRaises(Http403Error):
             discover(client)
 
+    def test_apply_access_checks_propagates_http401(self):
+        """_apply_access_checks should fail fast on invalid credentials."""
+        schemas, metadata = get_schemas()
+        client = _make_client_401()
+        with self.assertRaises(Http401Error):
+            _apply_access_checks(client, schemas, metadata)
+
+    def test_discover_propagates_http401(self):
+        """discover() should propagate Http401 from stream access probes."""
+        client = _make_client_401()
+        with self.assertRaises(Http401Error):
+            discover(client)
+
 
 # ---------------------------------------------------------------------------
 # _prune_inaccessible_children
@@ -225,6 +285,15 @@ class TestCheckAccess(unittest.TestCase):
         stream = Conversations(client=client)
         self.assertFalse(stream.check_access())
 
+    def test_parent_stream_http401_propagates(self):
+        """Invalid credentials (401) must fail fast and bubble up unchanged."""
+        from tap_helpscout.streams.conversations import Conversations
+        client = MagicMock()
+        client.get.side_effect = Http401Error()
+        stream = Conversations(client=client)
+        with self.assertRaises(Http401Error):
+            stream.check_access()
+
     def test_non_403_exception_propagates(self):
         from tap_helpscout.streams.conversations import Conversations
         from tap_helpscout.exceptions import Http500Error
@@ -233,46 +302,3 @@ class TestCheckAccess(unittest.TestCase):
         stream = Conversations(client=client)
         with self.assertRaises(Http500Error):
             stream.check_access()
-
-    def test_401_invalid_credentials_propagates(self):
-        """Test that 401 (invalid credentials) fails fast during discovery."""
-        client = MagicMock()
-        client.get.side_effect = Http401Error()
-        stream = Conversations(client=client)
-        with self.assertRaises(Http401Error):
-            stream.check_access()
-
-
-# ---------------------------------------------------------------------------
-# discover() – invalid credentials (401)
-# ---------------------------------------------------------------------------
-
-class TestDiscoverInvalidCredentials(unittest.TestCase):
-    """Test that discovery fails fast on invalid credentials (401 Unauthorized)."""
-
-    def _make_401_client(self):
-        """Return a mock HelpScoutClient that raises Http401Error on any .get() call."""
-        client = MagicMock()
-        client.get.side_effect = Http401Error()
-        return client
-
-    def test_apply_access_checks_fails_on_401(self):
-        """Test that _apply_access_checks raises Http401Error when credentials are invalid."""
-        schemas, metadata = get_schemas()
-        client = self._make_401_client()
-        with self.assertRaises(Http401Error):
-            _apply_access_checks(client, schemas, metadata)
-
-    def test_discover_fails_on_401(self):
-        """Test that discover() raises Http401Error when credentials are invalid."""
-        client = self._make_401_client()
-        with self.assertRaises(Http401Error):
-            discover(client)
-
-    def test_401_fails_fast_on_first_stream(self):
-        """Test that 401 fails immediately without checking all streams."""
-        client = self._make_401_client()
-        with self.assertRaises(Http401Error):
-            discover(client)
-        # Verify that client.get was called (confirming discovery was attempted)
-        client.get.assert_called()
